@@ -59,6 +59,7 @@ const UI = (() => {
   let ctx = null;
   let master = null;
   let noise = null;
+  let ready = null; // resolves when the piano recordings are decoded
 
   /** Run `fn` once the audio clock is going. Some browsers only start it a moment after the click. */
   function whenRunning(fn) {
@@ -75,14 +76,17 @@ const UI = (() => {
       const room = ctx.createConvolver();
       room.buffer = makeRoom();
       const wet = ctx.createGain();
-      wet.gain.value = 0.16;
+      wet.gain.value = 0.1;
       master.connect(room);
       room.connect(wet);
       wet.connect(comp);
       noise = makeNoise();
+      ready = loadSamples();
     }
-    if (ctx.state === 'running') fn();
-    else ctx.resume().then(fn, () => {});
+    // The first press waits for the recordings, but never for more than a few seconds.
+    const go = () => Promise.race([ready, new Promise((r) => setTimeout(r, 4000))]).then(fn);
+    if (ctx.state === 'running') go();
+    else ctx.resume().then(go, () => {});
   }
 
   /** The audio clock, in seconds. Only meaningful inside `whenRunning`. */
@@ -125,12 +129,13 @@ const UI = (() => {
   const partialLevel = (n) => (0.25 + 0.75 * Math.abs(Math.sin((n * Math.PI) / 8))) * Math.pow(n, -1.1) * Math.exp(-0.06 * n);
 
   /**
-   * A struck piano string, built from its partials. Each partial sits a little sharp of the harmonic
+   * The fallback voice, for before the samples have loaded or when they cannot be fetched: a struck
+   * piano string, built from its partials. Each partial sits a little sharp of the harmonic
    * (stiffness), decays at its own rate (higher ones faster) in two stages (a prompt sound, then a
    * long tail), and the lowest ones are two detuned strings that beat. A burst of noise is the
    * hammer; the key lifting at `dur` damps the note.
    */
-  function tone(midi, t, dur, vol, dest) {
+  function synthTone(midi, t, dur, vol, dest) {
     const f = 440 * Math.pow(2, (midi - 69) / 12);
     const B = inharmonicity(midi);
     // How long the fundamental rings: bass strings sing for seconds, treble ones die quickly.
@@ -209,6 +214,75 @@ const UI = (() => {
       dest.users++;
       src.onended = () => --dest.users || dest.disconnect();
     }
+  }
+
+  // The Salamander Grand Piano (Alexander Holm, CC BY 3.0): a recorded note every minor third,
+  // each one stretched or squeezed a little to reach the notes between.
+  const SAMPLE_DIR = 'audio/salamander/';
+  const samples = []; // { midi, buffer, norm }, in the order they arrive
+
+  /** What brings the loudest moment of the first half second of a recording up to 1, so every register plays at the same level. */
+  function normOf(buffer) {
+    let peak = 0.001;
+    for (let c = 0; c < buffer.numberOfChannels; c++) {
+      const d = buffer.getChannelData(c);
+      for (let i = 0, n = Math.min(d.length, buffer.sampleRate / 2); i < n; i++) peak = Math.max(peak, Math.abs(d[i]));
+    }
+    return 1 / peak;
+  }
+
+  /** Start fetching every recording the moment the page loads, so they are in hand by the first press. */
+  const fetched = [];
+  for (let oct = 0; oct <= 8; oct++) {
+    for (const [name, pc] of Object.entries({ A: 9, C: 0, Ds: 3, Fs: 6 })) {
+      const midi = 12 * (oct + 1) + pc;
+      if (midi < 21 || midi > 108) continue;
+      fetched.push(
+        fetch(`${SAMPLE_DIR}${name}${oct}.mp3`)
+          .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
+          .then((data) => ({ midi, data }))
+          .catch(() => null), // a missing file only means the synth covers that register
+      );
+    }
+  }
+
+  /** Decode what was fetched. Resolves once all of it is ready to play. */
+  function loadSamples() {
+    return Promise.all(
+      fetched.map((f) =>
+        f
+          .then((r) => r && ctx.decodeAudioData(r.data).then((buffer) => samples.push({ midi: r.midi, buffer, norm: normOf(buffer) })))
+          .catch(() => {}),
+      ),
+    );
+  }
+
+  /** The loaded recording closest in pitch to `midi`, if one is within a major third. */
+  function nearestSample(midi) {
+    let best = null;
+    for (const s of samples) if (!best || Math.abs(s.midi - midi) < Math.abs(best.midi - midi)) best = s;
+    return best && Math.abs(best.midi - midi) <= 4 ? best : null;
+  }
+
+  /** A piano note: the nearest recording, retuned, and damped when the key lifts at `dur`. */
+  function tone(midi, t, dur, vol, dest) {
+    const s = nearestSample(midi);
+    if (!s) return synthTone(midi, t, dur, vol, dest);
+    const src = ctx.createBufferSource();
+    src.buffer = s.buffer;
+    src.playbackRate.value = Math.pow(2, (midi - s.midi) / 12);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(vol * s.norm, t);
+    g.gain.setTargetAtTime(0, t + dur, 0.09);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = Math.max(-0.4, Math.min(0.4, (midi - 66) / 60));
+    src.connect(g);
+    g.connect(pan);
+    pan.connect(dest);
+    dest.users++;
+    src.start(t);
+    src.stop(t + dur + 0.8);
+    src.onended = () => --dest.users || dest.disconnect();
   }
 
   /** Fade a playback's own bus to silence, then drop it. */

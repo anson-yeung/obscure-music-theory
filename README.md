@@ -36,7 +36,8 @@ css/*.css             one file for each page
 js/forte-table.js     the 223 Forte set classes
 js/theory.js          pitch-class set theory, no DOM (also loads in Node)
 js/lattice.js         which class sits inside which, for Subsets and supersets (also loads in Node)
-js/common.js          helpers shared by the pages: clock, keyboard, hash, motion
+js/common.js          helpers shared by the pages: clock, keyboard, hash, motion, piano sound
+audio/salamander/     the piano recordings (see below)
 js/*.js               one file for each page
 tests/theory.test.js
 ```
@@ -45,3 +46,8 @@ Tests: `node --test tests/*.test.js`
 
 The Forte class names come from music21's tables. Prime forms come from this project's own
 algorithm, and all 4,095 non-empty pitch-class sets were checked against music21's Forte names.
+
+The piano sound is the Salamander Grand Piano by Alexander Holm (a Yamaha C5, sampled every minor
+third), licensed CC BY 3.0, as trimmed and hosted by the Tone.js project
+(https://github.com/Tonejs/audio/tree/master/salamander). The page must be served over http, as the
+samples are fetched; opened from disk it falls back to a synthesized piano.
