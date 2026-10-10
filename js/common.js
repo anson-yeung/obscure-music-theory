@@ -59,7 +59,6 @@ const UI = (() => {
   let ctx = null;
   let master = null;
   let noise = null;
-  let ready = null; // resolves when the piano recordings are decoded
 
   /** Run `fn` once the audio clock is going. Some browsers only start it a moment after the click. */
   function whenRunning(fn) {
@@ -81,12 +80,16 @@ const UI = (() => {
       room.connect(wet);
       wet.connect(comp);
       noise = makeNoise();
-      ready = loadSamples();
     }
     // The first press waits for the recordings, but never for more than a few seconds.
     const go = () => Promise.race([ready, new Promise((r) => setTimeout(r, 4000))]).then(fn);
     if (ctx.state === 'running') go();
     else ctx.resume().then(go, () => {});
+  }
+
+  // Pressing down comes a moment before the click, which is time enough to build the audio graph.
+  for (const ev of ['pointerdown', 'keydown', 'touchstart']) {
+    window.addEventListener(ev, () => whenRunning(() => {}), { once: true, capture: true, passive: true });
   }
 
   /** The audio clock, in seconds. Only meaningful inside `whenRunning`. */
@@ -231,31 +234,32 @@ const UI = (() => {
     return 1 / peak;
   }
 
-  /** Start fetching every recording the moment the page loads, so they are in hand by the first press. */
+  /** Start fetching every recording the moment the page loads, middle of the keyboard first. */
   const fetched = [];
   for (let oct = 0; oct <= 8; oct++) {
     for (const [name, pc] of Object.entries({ A: 9, C: 0, Ds: 3, Fs: 6 })) {
       const midi = 12 * (oct + 1) + pc;
-      if (midi < 21 || midi > 108) continue;
-      fetched.push(
-        fetch(`${SAMPLE_DIR}${name}${oct}.mp3`)
-          .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
-          .then((data) => ({ midi, data }))
-          .catch(() => null), // a missing file only means the synth covers that register
-      );
+      if (midi >= 21 && midi <= 108) fetched.push({ name: name + oct, midi });
     }
   }
+  fetched.sort((x, y) => Math.abs(x.midi - 72) - Math.abs(y.midi - 72));
 
-  /** Decode what was fetched. Resolves once all of it is ready to play. */
-  function loadSamples() {
-    return Promise.all(
-      fetched.map((f) =>
-        f
-          .then((r) => r && ctx.decodeAudioData(r.data).then((buffer) => samples.push({ midi: r.midi, buffer, norm: normOf(buffer) })))
-          .catch(() => {}),
-      ),
-    );
-  }
+  // Decoding needs a context, but an offline one is allowed to work before any click, and the
+  // buffers it makes play in the real one. So the recordings are ready before the first press.
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const decoder = OAC ? new OAC(2, 1, 44100) : null;
+
+  const ready = decoder
+    ? Promise.all(
+        fetched.map(({ name, midi }) =>
+          fetch(`${SAMPLE_DIR}${name}.mp3`)
+            .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject()))
+            .then((data) => decoder.decodeAudioData(data))
+            .then((buffer) => samples.push({ midi, buffer, norm: normOf(buffer) }))
+            .catch(() => {}), // a missing file only means the synth covers that register
+        ),
+      )
+    : Promise.resolve();
 
   /** The loaded recording closest in pitch to `midi`, if one is within a major third. */
   function nearestSample(midi) {
