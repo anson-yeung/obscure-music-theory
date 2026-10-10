@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Calculator – Obscure Music Theory</title>
+    <meta name="description" content="Normal form, prime form, Forte name and interval vector for pitch-class sets, with playback." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Obscure Music Theory</a>
+        <nav aria-label="Pages">
+          <a href="calculator.html" aria-current="page">Calculator</a>
+          <a href="transformations.html" data-carry="transformations.html">Transformations</a>
+          <a href="set-classes.html">Set classes</a>
+          <a href="subsets-and-supersets.html" data-carry="subsets-and-supersets.html">Subsets and supersets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="top">
+        <div class="rail">
+          <h1 class="sr-only">Calculator</h1>
+          <div class="summary" aria-live="polite">
+            <p class="key">Forte name</p>
+            <p class="display" id="forte"></p>
+            <p class="key">Prime form</p>
+            <p class="display accent" id="prime"></p>
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <div class="field">
+            <input id="pcs-input" type="text" aria-label="Set" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="0146" />
+          </div>
+          <div class="play">
+            <button type="button" class="btn" id="play-notes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play notes</button>
+            <button type="button" class="btn" id="play-chord"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play chord</button>
+          </div>
+        </div>
+        <div class="clock-wrap">
+          <div id="clock" class="clock"></div>
+        </div>
+        <div class="keys-wrap">
+          <div class="keys-scroll" id="keys-scroll"></div>
+        </div>
+      </div>
+
+      <section class="section band data" id="sec-props" aria-label="Properties">
+        <div class="wrap props-wrap" data-reveal>
+          <div class="ptable" id="props" role="table" aria-label="Properties"></div>
+          <div class="ic" id="ic">
+            <p class="key">Interval vector</p>
+            <div class="ic-box" id="ic-box" role="table" aria-label="Interval vector: pair count for each interval class"></div>
+            <div class="ic-clock" id="ic-clock"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/forte-table.js"></script>
+    <script src="js/theory.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/ui.js"></script>
+  </body>
+</html>

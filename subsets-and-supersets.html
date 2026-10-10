@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Subsets and supersets – Obscure Music Theory</title>
+    <meta name="description" content="Every set class on one map, and the classes directly above and below the one you choose: its supersets and its subsets." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/subsets-and-supersets.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Obscure Music Theory</a>
+        <nav aria-label="Pages">
+          <a href="calculator.html">Calculator</a>
+          <a href="transformations.html">Transformations</a>
+          <a href="set-classes.html">Set classes</a>
+          <a href="subsets-and-supersets.html" aria-current="page">Subsets and supersets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="head wrap rise">
+        <h1 class="title">Subsets and supersets</h1>
+        <div class="field">
+          <input id="q" type="text" aria-label="Search" autocomplete="off" spellcheck="false" placeholder="4-Z15 or 0146" />
+        </div>
+      </section>
+
+      <section class="band map" aria-label="All set classes">
+        <div class="scroller" id="scroller">
+          <canvas id="cv" role="img" aria-label="All 223 set classes, one row for each number of notes. Choose one to light its subsets and supersets."></canvas>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+      </section>
+
+      <section class="wrap stage-wrap" aria-label="Chosen set class">
+        <svg id="stage" viewBox="0 0 1200 780" role="group" aria-label="Supersets above the chosen class, subsets below"></svg>
+      </section>
+    </main>
+
+    <script src="js/forte-table.js"></script>
+    <script src="js/theory.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/lattice.js"></script>
+    <script src="js/subsets-and-supersets.js"></script>
+  </body>
+</html>

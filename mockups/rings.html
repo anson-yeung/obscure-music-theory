@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Rings – Subset and superset mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px 56px; align-items: start; padding-bottom: 64px; }
+      @media (min-width: 901px) { .layout { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+
+      #disc { display: block; width: 100%; max-width: 720px; height: auto; margin: 0 auto; }
+      .ring { fill: none; stroke: var(--line); stroke-width: 1; transition: stroke 0.3s, stroke-width 0.3s; }
+      .ring.next { stroke-dasharray: 3 6; stroke: var(--line-strong); }
+      .ring.lit { stroke: var(--text); stroke-width: 2; }
+      .ray { stroke: var(--blue); stroke-opacity: 0.28; stroke-width: 1.5; stroke-linecap: round; }
+      .dot { cursor: pointer; outline: none; }
+      .dot circle.body { transition: r 0.4s var(--spring), fill 0.3s; }
+      .dot.on circle.body { fill: var(--blue); }
+      .dot.hot circle.body { fill: var(--yellow); }
+      .dot.on:hover circle.body, .dot.hot:hover circle.body { r: 10; }
+      .dot.free circle.body { fill: var(--bg); stroke: var(--line-strong); stroke-width: 1.5; }
+      .dot.free:hover circle.body, .dot.free:focus-visible circle.body { fill: var(--yellow); stroke: var(--yellow); r: 10; }
+      .dot:focus-visible circle.body { stroke: var(--yellow); stroke-width: 3; }
+      .dot .pc { fill: var(--ink); font-size: 9px; font-weight: 600; text-anchor: middle; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+      .dot:hover .pc, .dot:focus-visible .pc { opacity: 1; }
+      .dot.free:hover .pc { opacity: 1; }
+      .grow { animation: pop 0.7s var(--ease) both; transform-box: fill-box; transform-origin: center; }
+
+      .c-name { text-anchor: middle; fill: var(--text); font-size: 25px; font-weight: 400; letter-spacing: -0.02em; }
+      .c-prime { text-anchor: middle; fill: var(--blue); font-size: 13px; }
+      .c-name.preview, .c-prime.preview { fill: var(--yellow); }
+
+      .read { display: flex; flex-direction: column; gap: 22px; }
+      .read-actions { display: flex; gap: 8px; }
+      .levels { list-style: none; margin: 0; padding: 0; }
+      .levels li { animation: cell 0.6s var(--ease) backwards; animation-delay: calc(var(--i) * 40ms); }
+      .levels button { display: grid; grid-template-columns: 5rem 5rem 1fr auto; align-items: baseline; gap: 0 12px; width: 100%; padding: 9px 4px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.25s; }
+      .levels button:hover { background: rgba(255, 255, 255, 0.05); }
+      .levels .k { color: var(--muted); }
+      .levels .nm { font-weight: var(--w-head); }
+      .levels .pr { color: var(--blue); letter-spacing: 0.04em; overflow: hidden; text-overflow: ellipsis; }
+      .levels .add { color: var(--yellow); font-weight: var(--w-label); }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Subset and superset mockups</a>
+        <nav aria-label="Mockups">
+          <a href="constellation.html">Constellation</a>
+          <a href="walk.html">Walk</a>
+          <a href="rings.html" aria-current="page">Rings</a>
+          <a href="fingerprint.html">Fingerprint</a>
+          <a href="overlap.html">Overlap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap page-head rise">
+        <h1 class="title">Rings</h1>
+      </section>
+
+      <section class="wrap layout">
+        <svg id="disc" viewBox="0 0 640 640" role="group" aria-label="One ring for each note added"></svg>
+        <div class="read">
+          <div class="read-actions">
+            <button type="button" class="btn" id="random">Random</button>
+            <button type="button" class="btn" id="clear">Clear</button>
+          </div>
+          <ol class="levels" id="levels" aria-label="Classes along the chain"></ol>
+        </div>
+      </section>
+    </main>
+
+    <script src="../js/forte-table.js"></script>
+    <script src="../js/theory.js"></script>
+    <script src="lattice.js"></script>
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+        const disc = $('disc');
+        const C = 320;
+        const R = (k) => 58 + (k - 1) * 22.5;
+        const P = (pc, k) => {
+          const a = (pc / 12) * 2 * Math.PI - Math.PI / 2;
+          return [C + R(k) * Math.cos(a), C + R(k) * Math.sin(a)];
+        };
+        const f = (v) => v.toFixed(1);
+        let chain = [0, 1, 4, 6];
+        let preview = null;
+
+        const classAt = (k, extra) => PC.forteClass(extra === undefined ? chain.slice(0, k) : [...chain.slice(0, k), extra]);
+
+        function render() {
+          const m = chain.length;
+          let s = '';
+          for (let k = 1; k <= Math.min(12, m + 1); k++) s += `<circle class="ring${k > m ? ' next' : ''}" data-k="${k}" cx="${C}" cy="${C}" r="${R(k)}"/>`;
+          chain.forEach((pc, j) => {
+            const [x0, y0] = P(pc, j + 1), [x1, y1] = P(pc, m);
+            if (m > j + 1) s += `<line class="ray" x1="${f(x0)}" y1="${f(y0)}" x2="${f(x1)}" y2="${f(y1)}"/>`;
+          });
+          for (let k = 1; k <= m; k++) {
+            chain.slice(0, k).forEach((pc, j) => {
+              const [x, y] = P(pc, k);
+              const newest = j === k - 1;
+              const op = (0.35 + 0.65 * (k / m)).toFixed(2);
+              s += `<g class="dot ${newest ? 'hot' : 'on'}" tabindex="0" role="button" aria-label="Remove from ring ${k} outward" data-peel="${k}" style="opacity:${op}">
+                <circle class="body" cx="${f(x)}" cy="${f(y)}" r="7"/><text class="pc" x="${f(x)}" y="${f(y + 3.2)}">${PC.pcLabel(pc)}</text></g>`;
+            });
+          }
+          if (m < 12) {
+            for (let pc = 0; pc < 12; pc++) {
+              if (chain.includes(pc)) continue;
+              const [x, y] = P(pc, m + 1);
+              s += `<g class="dot free grow" tabindex="0" role="button" aria-label="Add ${PC.pcLabel(pc)}" data-add="${pc}">
+                <circle class="body" cx="${f(x)}" cy="${f(y)}" r="7"/><text class="pc" x="${f(x)}" y="${f(y + 3.2)}">${PC.pcLabel(pc)}</text></g>`;
+            }
+          }
+          s += `<text class="c-name" id="c-name" x="${C}" y="${C + 4}"></text><text class="c-prime" id="c-prime" x="${C}" y="${C + 26}"></text>`;
+          disc.innerHTML = s;
+          center();
+          levels();
+          zoomTo(R(Math.min(12, m + 1)) + 24);
+        }
+
+        // The view eases out to the outermost ring so a short chain still fills the disc.
+        let half = 320, zoomRaf = 0;
+        function zoomTo(target) {
+          cancelAnimationFrame(zoomRaf);
+          const from = half, t0 = performance.now();
+          const step = (now) => {
+            const t = Math.min(1, (now - t0) / 700);
+            half = from + (target - from) * (1 - Math.pow(1 - t, 3));
+            disc.setAttribute('viewBox', `${C - half} ${C - half} ${half * 2} ${half * 2}`);
+            if (t < 1) zoomRaf = requestAnimationFrame(step);
+          };
+          zoomRaf = requestAnimationFrame(step);
+        }
+
+        function center() {
+          const n = $('c-name'), p = $('c-prime');
+          if (!n) return;
+          let c = null;
+          n.classList.toggle('preview', preview !== null);
+          p.classList.toggle('preview', preview !== null);
+          if (preview !== null) c = classAt(chain.length, preview);
+          else if (chain.length) c = classAt(chain.length);
+          n.textContent = c ? c.name : 'Add a note';
+          if (!c) n.style.fontSize = '17px'; else n.style.fontSize = '';
+          const pr = c ? LAT.label(c.prime) : '';
+          p.textContent = pr.length > 8 ? '' : pr;
+        }
+
+        function levels() {
+          $('levels').innerHTML = chain.map((pc, j) => {
+            const k = j + 1;
+            const c = classAt(k);
+            return `<li style="--i:${j}"><button type="button" data-level="${k}"><span class="k">${k} ${k === 1 ? 'note' : 'notes'}</span><span class="nm">${c.name}</span><span class="pr">${LAT.label(c.prime)}</span><span class="add">+${PC.pcLabel(pc)}</span></button></li>`;
+          }).join('');
+        }
+
+        disc.addEventListener('click', (e) => {
+          const add = e.target.closest('[data-add]');
+          const peel = e.target.closest('[data-peel]');
+          preview = null;
+          if (add) chain = [...chain, Number(add.dataset.add)];
+          else if (peel) chain = chain.slice(0, Number(peel.dataset.peel) - 1);
+          else return;
+          render();
+        });
+        disc.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            const t = e.target.closest('[data-add],[data-peel]');
+            if (t) { e.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+          }
+        });
+        const setPreview = (e, on) => {
+          const add = e.target.closest('[data-add]');
+          if (!add) return;
+          preview = on ? Number(add.dataset.add) : null;
+          center();
+        };
+        disc.addEventListener('mouseover', (e) => setPreview(e, true));
+        disc.addEventListener('mouseout', (e) => setPreview(e, false));
+        disc.addEventListener('focusin', (e) => setPreview(e, true));
+        disc.addEventListener('focusout', (e) => setPreview(e, false));
+
+        $('levels').addEventListener('click', (e) => {
+          const b = e.target.closest('[data-level]');
+          if (!b) return;
+          chain = chain.slice(0, Number(b.dataset.level));
+          render();
+        });
+        const lit = (e, on) => {
+          const b = e.target.closest('[data-level]');
+          if (!b) return;
+          const r = disc.querySelector(`.ring[data-k="${b.dataset.level}"]`);
+          if (r) r.classList.toggle('lit', on);
+        };
+        $('levels').addEventListener('mouseover', (e) => lit(e, true));
+        $('levels').addEventListener('mouseout', (e) => lit(e, false));
+
+        $('random').addEventListener('click', () => {
+          const a = [...Array(12).keys()];
+          for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+          chain = a;
+          render();
+        });
+        $('clear').addEventListener('click', () => { chain = []; render(); });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

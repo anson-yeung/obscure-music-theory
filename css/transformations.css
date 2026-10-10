@@ -1,0 +1,123 @@
+/* Transformations page. Shared styles are in base.css. */
+
+/* ---------- the set and its names, as on the calculator ---------- */
+
+.head { --nudge: 40px; display: grid; gap: 28px; padding-top: clamp(4px, 1.5vh, 16px); padding-bottom: clamp(36px, 6vh, 64px); }
+.head .field-wrap { position: relative; max-width: 46rem; }
+.head .field-wrap .play { justify-content: flex-start; margin-top: 18px; }
+@media (max-width: 900px) {
+  .head-props { margin-top: 12px; }
+}
+@media (min-width: 901px) {
+  .head { grid-template-columns: minmax(0, 22rem) minmax(0, 26rem); justify-content: space-between; align-items: end; padding-bottom: calc(clamp(36px, 6vh, 64px) + 52px); }
+  .head .field-wrap { max-width: none; }
+  /* The buttons hang below the box without taking any room, so the box does not move. */
+  .head .field-wrap .play { position: absolute; top: 100%; left: 0; margin-top: 16px; }
+  /* The names sit a little lower than the text box; the box itself stays where it is. */
+  .head-props { transform: translateY(var(--nudge)); }
+}
+.head-props { max-width: 520px; transition: opacity 0.6s var(--ease); }
+.head-props .prow { grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr); }
+.head-props .prow:last-child { border-bottom: 0; }
+.head-props .pval { font-size: 1.375rem; font-weight: var(--w-body); }
+.is-empty .head-props { opacity: 0; }
+
+/* ---------- Tn and In ---------- */
+
+.op-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 40px; }
+
+.track { flex: 1 1 360px; max-width: 560px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; margin-top: 44px; }
+@media (min-width: 901px) {
+  .pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px; }
+}
+.fig { margin: 0; display: grid; gap: 18px; justify-items: center; text-align: center; }
+.fig .clock { width: min(100%, 400px); }
+.opname { font-size: 1.5rem; font-weight: var(--w-head); letter-spacing: -0.01em; }
+.res { min-height: 1.2em; font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: var(--w-display); letter-spacing: var(--track); line-height: 1.2; }
+
+/* Playback under each result, as on the calculator. */
+.play { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 20px; transition: opacity 0.5s var(--ease); }
+.is-empty .play { opacity: 0.35; pointer-events: none; }
+
+/* The set itself is the dotted outline and the open ring; its image is the solid shape. */
+.shape.src { fill: none; stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 2 9; stroke-linecap: round; }
+.node.src circle { stroke: var(--text); stroke-width: 3; }
+.node.src.on circle { stroke: var(--text); }
+
+/* The notes of a clock are readings, not controls, so they do not react to the pointer here. */
+.clock.static .node { pointer-events: none; }
+
+/* ---------- symmetry ---------- */
+
+.sym-text { display: grid; gap: 28px; align-content: start; }
+.stable { width: 100%; max-width: 640px; border-collapse: collapse; }
+.stable th, .stable td { padding: 9px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+.stable thead th { color: var(--text); font-weight: var(--w-label); border-bottom-color: var(--line-strong); }
+.stable tbody th { font-weight: var(--w-label); white-space: nowrap; }
+.stable td { font-size: 1.25rem; overflow-wrap: anywhere; }
+.stable .deg { font-size: 1.375rem; }
+.sym-clock { width: min(100%, 360px); justify-self: center; }
+@media (min-width: 901px) {
+  .sym-text { grid-column: 1 / 8; }
+  .sym-clock { grid-column: 9 / 13; align-self: center; }
+  /* Once the list is open the text is taller than the clock, so the clock stays at the top. */
+  .cols:has(.appendix[open]) .sym-clock { align-self: start; }
+}
+
+/* ---------- unique forms: a flat tonal panel that opens to all 24 ---------- */
+
+.appendix {
+  max-width: 640px;
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.appendix summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 20px;
+  padding: 18px 24px;
+  cursor: pointer;
+  list-style: none;
+}
+.appendix summary::-webkit-details-marker { display: none; }
+.appendix summary:focus-visible { outline-offset: -3px; }
+.a-name { font-size: 1.0625rem; font-weight: var(--w-head); }
+.a-val { flex: 1; font-size: 1.25rem; }
+.chev {
+  align-self: center;
+  width: 11px;
+  height: 11px;
+  border-right: 2px solid var(--text);
+  border-bottom: 2px solid var(--text);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 0.4s var(--ease);
+}
+.appendix[open] .chev { transform: translateY(2px) rotate(-135deg); }
+.appendix .ttable { width: calc(100% - 24px); margin: 0 12px 12px; }
+
+.ttable { border-collapse: collapse; }
+.ttable th, .ttable td { padding: 9px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: baseline; }
+.appendix .ttable th, .appendix .ttable td { padding-left: 12px; border-bottom-color: rgba(255, 255, 255, 0.14); }
+.appendix .ttable tbody tr:last-child > * { border-bottom: 0; }
+.ttable thead th { color: var(--text); font-weight: var(--w-label); border-bottom-color: var(--line-strong); }
+.ttable tbody th { width: 5rem; }
+.ttable td { font-size: 1.25rem; overflow-wrap: anywhere; }
+.ttable td .note { margin-left: 12px; font-size: 1rem; }
+.ttable td.same { color: var(--blue); }
+.ttable td.same .note { color: var(--blue); }
+.ttable tbody tr { cursor: pointer; transition: background 0.3s; }
+.ttable tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+.ttable tbody tr.sel { background: rgba(88, 196, 221, 0.12); }
+.ttable .pick {
+  display: block;
+  min-width: 2.5rem;
+  padding: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  font-size: 1.25rem;
+  font-weight: var(--w-label);
+  cursor: pointer;
+}
+[data-reveal].in .ttable tbody tr { animation: cell 0.7s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms + 150ms); }

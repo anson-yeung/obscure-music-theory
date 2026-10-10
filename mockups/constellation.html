@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Constellation – Subset and superset mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      .top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; }
+      .top .field { margin-top: 18px; max-width: 22rem; }
+      .sel { display: flex; align-items: center; gap: 22px; min-height: 120px; }
+      .sel-clock { width: 112px; flex: none; }
+      .sel-name { font-size: 2.6rem; font-weight: var(--w-display); letter-spacing: var(--track); line-height: 1; }
+      .sel-prime { margin-top: 4px; font-size: 1.25rem; color: var(--blue); letter-spacing: 0.02em; }
+      .sel-count { margin-top: 10px; display: flex; gap: 22px; font-weight: var(--w-label); }
+      .sel-count .sub { color: var(--blue); }
+      .sel-count .sup { color: var(--yellow); }
+      .sel.is-empty .sel-clock, .sel.is-empty .sel-prime, .sel.is-empty .sel-count { visibility: hidden; }
+      .sel.is-empty .sel-name { color: var(--muted); font-size: 1.5rem; font-weight: var(--w-body); }
+
+      .map { background: var(--band); }
+      .scroller { position: relative; overflow-x: auto; }
+      #cv { display: block; margin: 0 auto; cursor: default; }
+      .tip {
+        position: absolute;
+        z-index: 2;
+        padding: 6px 10px;
+        background: var(--hub);
+        border-radius: 6px;
+        font-weight: var(--w-label);
+        pointer-events: none;
+        white-space: nowrap;
+        transform: translate(-50%, -100%);
+      }
+      .tip span { margin-left: 8px; color: var(--blue); }
+
+      @media (max-width: 800px) { .top { grid-template-columns: minmax(0, 1fr); } }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Subset and superset mockups</a>
+        <nav aria-label="Mockups">
+          <a href="constellation.html" aria-current="page">Constellation</a>
+          <a href="walk.html">Walk</a>
+          <a href="rings.html">Rings</a>
+          <a href="fingerprint.html">Fingerprint</a>
+          <a href="overlap.html">Overlap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap top page-head rise">
+        <div>
+          <h1 class="title">Constellation</h1>
+          <div class="field"><input id="q" type="text" aria-label="Search" autocomplete="off" spellcheck="false" placeholder="4-Z15 or 0146" /></div>
+        </div>
+        <div class="sel is-empty" id="sel" aria-live="polite">
+          <div class="sel-clock" id="sel-clock"></div>
+          <div>
+            <p class="sel-name" id="s-name">Choose a set class</p>
+            <p class="sel-prime" id="s-prime"></p>
+            <p class="sel-count"><span class="sub" id="s-sub"></span><span class="sup" id="s-sup"></span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="map">
+        <div class="scroller" id="scroller">
+          <canvas id="cv" aria-label="Lattice of all 223 set classes, one row for each cardinality"></canvas>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../js/forte-table.js"></script>
+    <script src="../js/theory.js"></script>
+    <script src="lattice.js"></script>
+    <script>
+      (() => {
+        const css = getComputedStyle(document.documentElement);
+        const col = (v) => css.getPropertyValue(v).trim();
+        const BLUE = col('--blue'), YELLOW = col('--yellow'), TEXT = col('--text'), MUTED = col('--muted');
+        const $ = (id) => document.getElementById(id);
+        const cv = $('cv'), ctx = cv.getContext('2d'), tip = $('tip'), scroller = $('scroller');
+
+        // ---- rows by cardinality, ordered to keep the lines short ----
+        const rows = new Map();
+        for (let k = 1; k <= 12; k++) rows.set(k, LAT.classes.filter((c) => c.prime.length === k).map((c) => c.name));
+        const refX = new Map();
+        const place = (k) => {
+          const names = rows.get(k);
+          const sp = Math.min(64, 900 / names.length);
+          names.forEach((n, i) => refX.set(n, (i - (names.length - 1) / 2) * sp));
+        };
+        for (let k = 1; k <= 12; k++) place(k);
+        const bary = (n, nbrs) => {
+          const xs = [...nbrs.get(n)].map((m) => refX.get(m));
+          return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : refX.get(n);
+        };
+        const sortRow = (k, nbrs) => {
+          const names = rows.get(k);
+          const b = new Map(names.map((n) => [n, bary(n, nbrs)]));
+          names.sort((a, c) => b.get(a) - b.get(c));
+          place(k);
+        };
+        for (let it = 0; it < 8; it++) {
+          for (let k = 2; k <= 12; k++) sortRow(k, LAT.children);
+          for (let k = 11; k >= 1; k--) sortRow(k, LAT.parents);
+        }
+
+        // ---- layout ----
+        let W = 0, dpr = 1;
+        const H = 720;
+        const pos = new Map();
+        const yOf = (k) => 40 + (12 - k) * ((H - 80) / 11);
+        function layout() {
+          W = Math.max(scroller.clientWidth, 980);
+          dpr = window.devicePixelRatio || 1;
+          cv.width = W * dpr;
+          cv.height = H * dpr;
+          cv.style.width = W + 'px';
+          cv.style.height = H + 'px';
+          const usable = W - 140;
+          for (const [k, names] of rows) {
+            const sp = Math.min(64, usable / names.length);
+            names.forEach((n, i) => pos.set(n, { x: W / 2 + 24 + (i - (names.length - 1) / 2) * sp, y: yOf(k), sp }));
+          }
+          draw(performance.now());
+        }
+
+        // ---- state ----
+        let sel = null, hov = null, down = new Map(), up = new Map(), t0 = 0, raf = 0;
+        const clamp = (v) => Math.max(0, Math.min(1, v));
+        function info(n) {
+          if (!sel) return null;
+          if (n === sel) return { role: 'sel', a: 1 };
+          const el = performance.now() - t0;
+          if (down.has(n)) return { role: 'down', a: clamp((el - down.get(n) * 70) / 240) };
+          if (up.has(n)) return { role: 'up', a: clamp((el - up.get(n) * 70) / 240) };
+          return null;
+        }
+
+        function draw() {
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+
+          ctx.font = '500 14px Manrope, system-ui, sans-serif';
+          ctx.fillStyle = MUTED;
+          ctx.textBaseline = 'middle';
+          for (const k of rows.keys()) ctx.fillText(String(k), 22, yOf(k));
+
+          // every edge, one path
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = sel ? 'rgba(170,179,197,0.045)' : 'rgba(170,179,197,0.13)';
+          ctx.beginPath();
+          for (const [p, cs] of LAT.children) for (const c of cs) {
+            const A = pos.get(p), B = pos.get(c);
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+          }
+          ctx.stroke();
+
+          // edges on a path to or from the pinned class
+          if (sel) {
+            ctx.lineWidth = 1.4;
+            for (const [p, cs] of LAT.children) for (const c of cs) {
+              const ip = info(p), ic = info(c);
+              if (!ip || !ic) continue;
+              const isDown = ic.role === 'down' && (ip.role === 'down' || ip.role === 'sel');
+              const isUp = ip.role === 'up' && (ic.role === 'up' || ic.role === 'sel');
+              if (!isDown && !isUp) continue;
+              ctx.globalAlpha = Math.min(ip.a, ic.a) * (isDown ? 0.55 : 0.28);
+              ctx.strokeStyle = isDown ? BLUE : YELLOW;
+              const A = pos.get(p), B = pos.get(c);
+              ctx.beginPath();
+              ctx.moveTo(A.x, A.y);
+              ctx.lineTo(B.x, B.y);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+          }
+
+          // direct neighbours of the hovered node
+          if (hov && hov !== sel) {
+            ctx.lineWidth = 1.6;
+            ctx.strokeStyle = 'rgba(243,245,250,0.7)';
+            const H0 = pos.get(hov);
+            ctx.beginPath();
+            for (const m of [...LAT.parents.get(hov), ...LAT.children.get(hov)]) {
+              const M = pos.get(m);
+              ctx.moveTo(H0.x, H0.y);
+              ctx.lineTo(M.x, M.y);
+            }
+            ctx.stroke();
+          }
+
+          // nodes
+          for (const [n, p] of pos) {
+            const i = info(n);
+            ctx.globalAlpha = sel ? 0.3 : 0.7;
+            ctx.fillStyle = MUTED;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3.2, 0, 7);
+            ctx.fill();
+            if (i && i.role !== 'sel') {
+              ctx.globalAlpha = i.a;
+              ctx.fillStyle = i.role === 'down' ? BLUE : YELLOW;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 4.6 + (1 - i.a) * 4, 0, 7);
+              ctx.fill();
+            }
+          }
+          ctx.globalAlpha = 1;
+          if (sel) {
+            const p = pos.get(sel);
+            ctx.fillStyle = TEXT;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 7, 0, 7);
+            ctx.fill();
+          }
+          if (hov) {
+            const p = pos.get(hov);
+            ctx.strokeStyle = TEXT;
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 9, 0, 7);
+            ctx.stroke();
+          }
+        }
+
+        const SPAN = 12 * 70 + 300;
+        function tick() {
+          raf = 0;
+          draw();
+          if (sel && performance.now() - t0 < SPAN) raf = requestAnimationFrame(tick);
+        }
+        const redraw = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+        // ---- selection ----
+        function readout() {
+          const box = $('sel');
+          if (!sel) { box.classList.add('is-empty'); $('s-name').textContent = 'Choose a set class'; return; }
+          const c = LAT.byName.get(sel);
+          box.classList.remove('is-empty');
+          $('s-name').textContent = c.name;
+          $('s-prime').textContent = LAT.label(c.prime);
+          $('s-sub').textContent = down.size + (down.size === 1 ? ' subset' : ' subsets');
+          $('s-sup').textContent = up.size + (up.size === 1 ? ' superset' : ' supersets');
+          $('sel-clock').innerHTML = LAT.clock({ on: c.prime });
+        }
+        function select(name) {
+          sel = name;
+          down = name ? LAT.below(name) : new Map();
+          up = name ? LAT.above(name) : new Map();
+          t0 = performance.now();
+          readout();
+          redraw();
+        }
+
+        // ---- pointer ----
+        const hit = (e) => {
+          const r = cv.getBoundingClientRect();
+          const x = e.clientX - r.left, y = e.clientY - r.top;
+          let best = null, bd = 12 * 12;
+          for (const [n, p] of pos) {
+            const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+            if (d < bd) { bd = d; best = n; }
+          }
+          return best;
+        };
+        cv.addEventListener('mousemove', (e) => {
+          const n = hit(e);
+          if (n !== hov) {
+            hov = n;
+            cv.style.cursor = n ? 'pointer' : 'default';
+            if (n) {
+              const p = pos.get(n);
+              tip.hidden = false;
+              tip.innerHTML = `${n}<span>${LAT.label(LAT.byName.get(n).prime)}</span>`;
+              tip.style.left = p.x + 'px';
+              tip.style.top = p.y - 14 + 'px';
+            } else tip.hidden = true;
+            redraw();
+          }
+        });
+        cv.addEventListener('mouseleave', () => { hov = null; tip.hidden = true; redraw(); });
+        cv.addEventListener('click', (e) => {
+          const n = hit(e);
+          $('q').value = n || '';
+          select(n === sel ? null : n);
+        });
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') select(null); });
+
+        $('q').addEventListener('input', (e) => {
+          const c = LAT.find(e.target.value);
+          if (c) select(c.name);
+        });
+
+        new ResizeObserver(layout).observe(scroller);
+        layout();
+        select('4-Z15');
+        $('q').value = '4-Z15';
+      })();
+    </script>
+  </body>
+</html>

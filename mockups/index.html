@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Subset and superset mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      .ideas { list-style: none; margin: 0; padding: 0 0 80px; }
+      .ideas a {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 4px 24px;
+        padding: clamp(22px, 4vh, 36px) 0;
+        border-bottom: 1px solid var(--line);
+        text-decoration: none;
+        transition: padding 0.5s var(--ease), border-color 0.3s;
+      }
+      .ideas a:hover { padding-left: 16px; border-color: var(--line-strong); }
+      .ideas h2 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: var(--w-display); }
+      .ideas p { color: var(--muted); max-width: 40rem; }
+      .ideas .go { width: 28px; height: 28px; color: var(--blue); transition: transform 0.5s var(--ease); }
+      .ideas a:hover .go { transform: translateX(8px); }
+      .ideas li { animation: cell 0.7s var(--ease) backwards; animation-delay: calc(var(--i) * 70ms + 200ms); }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="../index.html">Obscure Music Theory</a>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="page-head rise">
+        <h1 class="title">Subsets and supersets</h1>
+      </section>
+
+      <ul class="ideas">
+        <li style="--i:0"><a href="constellation.html"><div><h2>Constellation</h2><p>All 223 classes as one star-map. Pin one and its subsets light up below, its supersets above.</p></div><svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></a></li>
+        <li style="--i:1"><a href="walk.html"><div><h2>Walk</h2><p>One class in the middle. Add a note and you go up, remove one and you go down, leaving a trail.</p></div><svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></a></li>
+        <li style="--i:2"><a href="rings.html"><div><h2>Rings</h2><p>Grow a set one note at a time. Every note you add becomes a new ring, like a tree trunk.</p></div><svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></a></li>
+        <li style="--i:3"><a href="fingerprint.html"><div><h2>Fingerprint</h2><p>Type a set and see every class inside it, or around it, as a strip for each size. Darker means more copies.</p></div><svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></a></li>
+        <li style="--i:4"><a href="overlap.html"><div><h2>Overlap</h2><p>Two sets as a Venn diagram. Slide one across the other through all 24 transformations to find where it fits.</p></div><svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg></a></li>
+      </ul>
+    </main>
+  </body>
+</html>

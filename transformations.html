@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Transformations – Obscure Music Theory</title>
+    <meta name="description" content="Transposition and inversion of a pitch-class set: Tn, In, the set's symmetry, and all 24 results." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/transformations.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Obscure Music Theory</a>
+        <nav aria-label="Pages">
+          <a href="calculator.html" data-carry="calculator.html">Calculator</a>
+          <a href="transformations.html" aria-current="page">Transformations</a>
+          <a href="set-classes.html">Set classes</a>
+          <a href="subsets-and-supersets.html" data-carry="subsets-and-supersets.html">Subsets and supersets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="head wrap">
+        <h1 class="sr-only">Transformations</h1>
+        <div class="field-wrap">
+          <div class="field">
+            <input id="pcs-input" type="text" aria-label="Set" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="0146" />
+          </div>
+          <div class="play">
+            <button type="button" class="btn" id="play-s-notes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play notes</button>
+            <button type="button" class="btn" id="play-s-chord"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play chord</button>
+          </div>
+        </div>
+        <div class="ptable head-props" aria-live="polite">
+          <div class="prow">
+            <span class="pname">Forte name</span>
+            <span class="pval" id="h-forte"></span>
+          </div>
+          <div class="prow">
+            <span class="pname">Normal form</span>
+            <span class="pval" id="h-normal"></span>
+          </div>
+          <div class="prow">
+            <span class="pname">Prime form</span>
+            <span class="pval" id="h-prime"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="band section data" id="sec-ops" aria-labelledby="h-op">
+        <div class="wrap" data-reveal>
+          <div class="op-bar">
+            <h2 id="h-op">T<sub>n</sub> and I<sub>n</sub></h2>
+            <div class="track" id="n-seg" role="group" aria-label="n"></div>
+          </div>
+          <div class="pair">
+            <figure class="fig">
+              <div class="clock" id="clock-t"></div>
+              <figcaption>
+                <p class="opname" id="name-t"></p>
+                <p class="res" id="res-t"></p>
+                <div class="play">
+                  <button type="button" class="btn" id="play-t-notes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play notes</button>
+                  <button type="button" class="btn" id="play-t-chord"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play chord</button>
+                </div>
+              </figcaption>
+            </figure>
+            <figure class="fig">
+              <div class="clock" id="clock-i"></div>
+              <figcaption>
+                <p class="opname" id="name-i"></p>
+                <p class="res" id="res-i"></p>
+                <div class="play">
+                  <button type="button" class="btn" id="play-i-notes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play notes</button>
+                  <button type="button" class="btn" id="play-i-chord"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play chord</button>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section data" aria-labelledby="h-sym">
+        <div class="wrap cols" data-reveal>
+          <div class="sym-text">
+            <h2 id="h-sym">Symmetry</h2>
+            <table class="stable">
+              <thead>
+                <tr><th scope="col">Symmetry</th><th scope="col">Operations</th><th scope="col">Degree</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Transpositional</th><td><span id="s-tn"></span></td><td><span class="deg" id="s-tn-n"></span></td></tr>
+                <tr><th scope="row">Inversional</th><td><span id="s-tni"></span></td><td><span class="deg" id="s-tni-n"></span></td></tr>
+              </tbody>
+            </table>
+            <details class="appendix">
+              <summary>
+                <span class="a-name">Unique forms</span>
+                <span class="a-val"><span id="s-forms"></span> (of 24)</span>
+                <span class="chev" aria-hidden="true"></span>
+              </summary>
+              <table class="ttable" id="ttable" aria-label="All 24 transpositions and inversions">
+                <thead>
+                  <tr><th scope="col">n</th><th scope="col">T<sub>n</sub></th><th scope="col">I<sub>n</sub></th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </details>
+          </div>
+          <div class="sym-clock clock" id="clock-s"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/forte-table.js"></script>
+    <script src="js/theory.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/transformations.js"></script>
+  </body>
+</html>

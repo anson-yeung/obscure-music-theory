@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Overlap – Subset and superset mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      .inputs { display: flex; flex-wrap: wrap; gap: 20px 48px; padding-bottom: 8px; }
+      .inputs .field { flex: 1 1 12rem; max-width: 18rem; }
+      .inputs .field input { font-size: 1.75rem; }
+      .inputs label { display: block; margin-bottom: 2px; font-weight: var(--w-label); }
+      .inputs .a label { color: var(--blue); }
+      .inputs .b label { color: var(--yellow); }
+
+      .verdict { padding-top: 24px; font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: var(--w-display); letter-spacing: var(--track); min-height: 2.6rem; }
+      .verdict .a { color: var(--blue); }
+      .verdict .b { color: var(--yellow); }
+
+      #venn { display: block; width: 100%; max-width: 860px; height: auto; margin: 8px auto 0; }
+      .circ-a { fill: rgba(88, 196, 221, 0.1); stroke: var(--blue); stroke-width: 1.6; }
+      .circ-b { fill: rgba(244, 211, 94, 0.09); stroke: var(--yellow); stroke-width: 1.6; }
+      .vlabel { font-size: 17px; font-weight: var(--w-head); text-anchor: middle; }
+      .vlabel.a { fill: var(--blue); }
+      .vlabel.b { fill: var(--yellow); }
+      .vsub { font-size: 14px; fill: var(--muted); text-anchor: middle; }
+      .note-dot { transition: transform 0.9s var(--ease); }
+      .note-dot circle { transition: fill 0.5s, stroke 0.5s; }
+      .note-dot text { font-size: 14px; font-weight: 600; text-anchor: middle; pointer-events: none; transition: fill 0.5s; }
+      .note-dot.ra circle { fill: var(--blue); }
+      .note-dot.rb circle { fill: var(--yellow); }
+      .note-dot.rab circle { fill: var(--text); }
+      .note-dot.rn circle { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+      .note-dot.ra text, .note-dot.rb text, .note-dot.rab text { fill: var(--ink); }
+      .note-dot.rn text { fill: var(--muted); }
+
+      .xform { padding: 12px 0 8px; }
+      .xrow { display: grid; grid-template-columns: 2.4rem repeat(12, minmax(0, 1fr)); gap: 4px; align-items: end; margin-top: 10px; }
+      .xrow .lab { font-weight: var(--w-head); padding-bottom: 6px; }
+      .x { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; background: none; border: 0; cursor: pointer; color: var(--muted); font-weight: var(--w-label); }
+      .x .bar { display: block; height: 64px; position: relative; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; }
+      .x .bar i { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--h) * 100%); background: var(--blue); opacity: 0.55; transition: height 0.6s var(--ease), background 0.3s; }
+      .x.full .bar i { background: var(--yellow); opacity: 1; }
+      .x:hover .bar { background: rgba(255, 255, 255, 0.12); }
+      .x[aria-pressed='true'] { color: var(--text); }
+      .x[aria-pressed='true'] .bar { outline: 2px solid var(--text); outline-offset: 1px; }
+
+      .common { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px 56px; padding: 28px 0 72px; }
+      @media (min-width: 801px) { .common { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .common h2 { margin-bottom: 10px; }
+      .common ul { list-style: none; margin: 0; padding: 0; }
+      .common li { display: grid; grid-template-columns: 5.2rem 1fr; padding: 7px 0; border-bottom: 1px solid var(--line); }
+      .common li b { font-weight: var(--w-head); }
+      .common li span { color: var(--blue); letter-spacing: 0.04em; }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Subset and superset mockups</a>
+        <nav aria-label="Mockups">
+          <a href="constellation.html">Constellation</a>
+          <a href="walk.html">Walk</a>
+          <a href="rings.html">Rings</a>
+          <a href="fingerprint.html">Fingerprint</a>
+          <a href="overlap.html" aria-current="page">Overlap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap page-head rise">
+        <h1 class="title">Overlap</h1>
+      </section>
+
+      <section class="wrap">
+        <div class="inputs">
+          <div class="a"><label for="qa">Set A</label><div class="field"><input id="qa" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="0146" /></div></div>
+          <div class="b"><label for="qb">Set B</label><div class="field"><input id="qb" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="013468" /></div></div>
+        </div>
+
+        <p class="verdict" id="verdict" aria-live="polite"></p>
+        <svg id="venn" viewBox="0 0 800 450" role="img" aria-label="Venn diagram of set A and set B"></svg>
+
+        <div class="xform" id="xform" role="group" aria-label="Transformation of A"></div>
+
+        <div class="common">
+          <div><h2>Greatest common subsets</h2><ul id="c-down"></ul></div>
+          <div><h2>Least common supersets</h2><ul id="c-up"></ul></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="../js/forte-table.js"></script>
+    <script src="../js/theory.js"></script>
+    <script src="lattice.js"></script>
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+        const read = (t) => {
+          const out = [];
+          for (const ch of t.toUpperCase()) {
+            if (ch >= '0' && ch <= '9') out.push(Number(ch));
+            else if (ch === 'A') out.push(10);
+            else if (ch === 'B') out.push(11);
+          }
+          return PC.toPcs(out);
+        };
+        const clean = (el) => { const v = el.value.replace(/[^0-9abAB]/g, '').toUpperCase(); if (v !== el.value) el.value = v; };
+
+        let A = [], B = [];
+        let tf = { n: 0, inv: false };
+        const apply = (s, t) => (t.inv ? PC.invert(s, t.n) : PC.transpose(s, t.n));
+        const overlap = (a, b) => a.filter((p) => b.includes(p)).length;
+
+        // ---------- Venn ----------
+        const AX = 290, BX = 510, CYV = 200, RV = 175;
+        const spiral = (cx, cy, n, gap) => Array.from({ length: n }, (_, i) => {
+          if (n === 1) return [cx, cy];
+          const rad = gap * Math.sqrt(i + 0.35), th = i * 2.399963;
+          return [cx + rad * Math.cos(th), cy + rad * Math.sin(th) * 0.9];
+        });
+
+        function buildVenn() {
+          $('venn').innerHTML = `<circle class="circ-a" cx="${AX}" cy="${CYV}" r="${RV}"/><circle class="circ-b" cx="${BX}" cy="${CYV}" r="${RV}"/>
+            <text class="vlabel a" id="la" x="${AX - 70}" y="30"></text><text class="vsub" id="la2" x="${AX - 70}" y="50"></text>
+            <text class="vlabel b" id="lb" x="${BX + 70}" y="30"></text><text class="vsub" id="lb2" x="${BX + 70}" y="50"></text>` +
+            [...Array(12).keys()].map((p) => `<g class="note-dot rn" id="nd${p}"><circle r="16"/><text y="5">${PC.pcLabel(p)}</text></g>`).join('');
+        }
+
+        function paintVenn(Ap) {
+          const regs = { ra: [], rab: [], rb: [], rn: [] };
+          for (let p = 0; p < 12; p++) {
+            const a = Ap.includes(p), b = B.includes(p);
+            regs[a && b ? 'rab' : a ? 'ra' : b ? 'rb' : 'rn'].push(p);
+          }
+          const centers = { ra: [AX - 95, CYV + 5], rab: [(AX + BX) / 2, CYV + 5], rb: [BX + 95, CYV + 5] };
+          for (const key of ['ra', 'rab', 'rb']) {
+            spiral(centers[key][0], centers[key][1], regs[key].length, 30).forEach(([x, y], i) => place(regs[key][i], key, x, y));
+          }
+          regs.rn.forEach((p, i) => place(p, 'rn', 400 + (i - (regs.rn.length - 1) / 2) * 42, 425));
+          const ca = PC.forteClass(Ap.length ? Ap : [0]);
+          $('la').textContent = Ap.length ? ca.name : '';
+          $('la2').textContent = Ap.length ? '{' + LAT.label(Ap) + '}' : '';
+          $('lb').textContent = B.length ? PC.forteClass(B).name : '';
+          $('lb2').textContent = B.length ? '{' + LAT.label(B) + '}' : '';
+        }
+        function place(p, cls, x, y) {
+          const g = $('nd' + p);
+          g.setAttribute('class', 'note-dot ' + cls);
+          g.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+        }
+
+        // ---------- the 24 transformations ----------
+        function buildX() {
+          const row = (inv) => `<div class="xrow"><span class="lab">${inv ? 'I' : 'T'}</span>` + [...Array(12).keys()].map((n) => {
+            const img = apply(A, { n, inv });
+            const o = overlap(img, B);
+            const full = o === A.length;
+            const on = tf.n === n && tf.inv === inv;
+            return `<button type="button" class="x${full ? ' full' : ''}" data-n="${n}" data-inv="${inv ? 1 : 0}" aria-pressed="${on}" aria-label="${inv ? 'I' : 'T'}${n}, ${o} of ${A.length} shared"><span class="bar"><i style="--h:${A.length ? o / A.length : 0}"></i></span><span>${n}</span></button>`;
+          }).join('') + '</div>';
+          $('xform').innerHTML = row(false) + row(true);
+        }
+
+        // ---------- verdict and common classes ----------
+        function relation() {
+          const a = PC.forteClass(A), b = PC.forteClass(B);
+          const an = `<span class="a">${a.name}</span>`, bn = `<span class="b">${b.name}</span>`;
+          if (a.name === b.name) return `${an} and ${bn} are the same class`;
+          if (LAT.below(b.name).has(a.name)) return `${an} is a subset of ${bn}`;
+          if (LAT.above(b.name).has(a.name)) return `${an} is a superset of ${bn}`;
+          return `${an} and ${bn} contain neither`;
+        }
+        function commons() {
+          const a = PC.forteClass(A).name, b = PC.forteClass(B).name;
+          const sets = (fn) => {
+            const sa = new Set([a, ...fn(a).keys()]), sb = new Set([b, ...fn(b).keys()]);
+            return [...sa].filter((n) => sb.has(n));
+          };
+          const inter = sets(LAT.below);
+          const greatest = inter.filter((n) => !inter.some((m) => m !== n && LAT.below(m).has(n))).sort(LAT.byOrder);
+          const uni = sets(LAT.above);
+          const least = uni.filter((n) => !uni.some((m) => m !== n && LAT.above(m).has(n))).sort(LAT.byOrder);
+          const li = (n) => `<li><b>${n}</b><span>${LAT.label(LAT.byName.get(n).prime)}</span></li>`;
+          $('c-down').innerHTML = greatest.length ? greatest.map(li).join('') : '<li><b>None</b></li>';
+          $('c-up').innerHTML = least.length ? least.map(li).join('') : '<li><b>None</b></li>';
+        }
+
+        function update(rebuild) {
+          const Ap = apply(A, tf);
+          paintVenn(Ap);
+          if (rebuild) {
+            if (!A.length || !B.length) return;
+            $('verdict').innerHTML = relation();
+            commons();
+          }
+          buildX();
+        }
+
+        function readInputs() {
+          clean($('qa')); clean($('qb'));
+          A = read($('qa').value);
+          B = read($('qb').value);
+          tf = { n: 0, inv: false };
+          if (!A.length || !B.length) { $('verdict').textContent = ''; $('c-down').innerHTML = $('c-up').innerHTML = ''; }
+          update(true);
+        }
+        $('qa').addEventListener('input', readInputs);
+        $('qb').addEventListener('input', readInputs);
+        $('xform').addEventListener('click', (e) => {
+          const b = e.target.closest('.x');
+          if (!b) return;
+          tf = { n: Number(b.dataset.n), inv: b.dataset.inv === '1' };
+          update(false);
+        });
+
+        buildVenn();
+        readInputs();
+      })();
+    </script>
+  </body>
+</html>

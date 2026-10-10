@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Walk – Subset and superset mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 36px; padding-bottom: 8px; }
+      .trail { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; min-height: 2.2rem; }
+      .trail button { padding: 4px 8px; background: none; border: 0; border-radius: 6px; cursor: pointer; color: var(--muted); font-weight: var(--w-label); }
+      .trail button:hover { color: var(--text); background: rgba(255, 255, 255, 0.07); }
+      .trail button[aria-current] { color: var(--text); }
+      .trail i { color: var(--line-strong); font-style: normal; }
+      .depth { display: flex; align-items: center; gap: 12px; }
+      .depth .key { margin: 0; }
+
+      .stage-wrap { overflow-x: auto; }
+      #stage { display: block; width: 100%; min-width: 760px; height: auto; }
+
+      .edge { fill: none; stroke-width: 1.3; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.9s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 22ms + 120ms); }
+      .edge.up { stroke: rgba(244, 211, 94, 0.5); }
+      .edge.down { stroke: rgba(88, 196, 221, 0.5); }
+      .edge.l2 { stroke: var(--line-strong); stroke-width: 1; }
+
+      .n { cursor: pointer; outline: none; }
+      .n .pop { transform-box: fill-box; transform-origin: center; animation: pop 0.7s var(--ease) both; animation-delay: calc(var(--i, 0) * 28ms + 150ms); transition: transform 0.5s var(--spring); }
+      .n:hover .pop, .n:focus-visible .pop { transform: scale(1.12); }
+      .n text { fill: var(--text); font-weight: var(--w-label); text-anchor: middle; pointer-events: none; }
+      .l1 text { font-size: 15px; }
+      .l2 text { font-size: 12.5px; fill: var(--muted); }
+      .l2:hover text, .l2:focus-visible text { fill: var(--text); }
+      .l2 circle { transition: r 0.3s var(--spring); }
+      .l2:hover circle, .l2:focus-visible circle { r: 8; }
+      .l2.up circle { fill: var(--yellow); }
+      .l2.down circle { fill: var(--blue); }
+      .n:focus-visible .hit { stroke: var(--yellow); }
+      .hit { fill: transparent; stroke: transparent; stroke-width: 2; }
+
+      .row-label { font-size: 16px; font-weight: var(--w-head); }
+      .row-label.up { fill: var(--yellow); }
+      .row-label.down { fill: var(--blue); }
+      .none { fill: var(--muted); font-size: 16px; text-anchor: middle; }
+
+      .c-name { font-size: 56px; font-weight: 300; letter-spacing: -0.03em; fill: var(--text); }
+      .c-prime { font-size: 28px; fill: var(--blue); letter-spacing: 0.02em; }
+      .c-meta { font-size: 16px; fill: var(--muted); }
+      .center { animation: pop 0.8s var(--ease) both; transform-box: fill-box; transform-origin: center; }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Subset and superset mockups</a>
+        <nav aria-label="Mockups">
+          <a href="constellation.html">Constellation</a>
+          <a href="walk.html" aria-current="page">Walk</a>
+          <a href="rings.html">Rings</a>
+          <a href="fingerprint.html">Fingerprint</a>
+          <a href="overlap.html">Overlap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap page-head rise">
+        <h1 class="title">Walk</h1>
+        <div class="field"><input id="q" type="text" aria-label="Search" autocomplete="off" spellcheck="false" placeholder="4-Z15 or 0146" /></div>
+      </section>
+
+      <section class="wrap controls">
+        <nav class="trail" id="trail" aria-label="Path"></nav>
+        <div class="depth">
+          <p class="key" id="l-depth">Depth</p>
+          <div class="seg" role="group" aria-labelledby="l-depth">
+            <button type="button" data-depth="1" aria-pressed="true">1 step</button>
+            <button type="button" data-depth="2" aria-pressed="false">2 steps</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap stage-wrap">
+        <svg id="stage" viewBox="0 0 1200 880" role="group" aria-label="Supersets above, subsets below"></svg>
+      </section>
+    </main>
+
+    <script src="../js/forte-table.js"></script>
+    <script src="../js/theory.js"></script>
+    <script src="lattice.js"></script>
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+        const stage = $('stage');
+        const CX = 600, CY = 440;
+        const Y = { up2: 70, up1: 235, down1: 645, down2: 810 };
+        let cur = '4-Z15', depth = 1, trail = ['4-Z15'];
+
+        const spread = (count, maxSp, total = 1080) => {
+          const sp = Math.min(maxSp, total / count);
+          return { sp, at: (i) => CX + (i - (count - 1) / 2) * sp };
+        };
+        const edge = (x0, y0, x1, y1, cls, i) => {
+          const my = (y0 + y1) / 2;
+          return `<path class="edge ${cls}" pathLength="1" style="--i:${i}" d="M${x0} ${y0}C${x0} ${my} ${x1} ${my} ${x1} ${y1}"/>`;
+        };
+
+        function render() {
+          const c = LAT.byName.get(cur);
+          const ups1 = [...LAT.parents.get(cur)].sort(LAT.byOrder);
+          const downs1 = [...LAT.children.get(cur)].sort(LAT.byOrder);
+          const L1 = spread(Math.max(ups1.length, downs1.length, 1), 128);
+          const s1 = Math.max(0.5, Math.min(1.1, L1.sp * 0.0088));
+          const r1 = 50 * s1;
+          let edges = '', nodes = '';
+
+          // ----- level 2 positions: under the average of the level-1 nodes they hang from -----
+          const level2 = (l1, nbrs) => {
+            const x1 = new Map(l1.map((n, i) => [n, spread(l1.length, 128).at(i)]));
+            const seen = new Set([cur, ...l1]);
+            const l2 = [];
+            for (const n of l1) for (const m of nbrs.get(n)) if (!seen.has(m)) { seen.add(m); l2.push(m); }
+            const bx = (m) => {
+              const xs = l1.filter((n) => nbrs.get(n).has(m)).map((n) => x1.get(n));
+              return xs.reduce((a, b) => a + b, 0) / xs.length;
+            };
+            const keyed = new Map(l2.map((m) => [m, bx(m)]));
+            l2.sort((a, b) => keyed.get(a) - keyed.get(b));
+            return { l2, x1 };
+          };
+
+          // ----- one side (up or down) -----
+          const side = (dir) => {
+            const l1 = dir === 'up' ? ups1 : downs1;
+            const nbrs = dir === 'up' ? LAT.parents : LAT.children;
+            const y1 = dir === 'up' ? Y.up1 : Y.down1;
+            const y2 = dir === 'up' ? Y.up2 : Y.down2;
+            const sx = spread(l1.length, 128);
+            const yCenterEdge = dir === 'up' ? CY - 86 : CY + 86;
+            const yNodeEdge = (y, r) => (dir === 'up' ? y + r : y - r);
+            const label = dir === 'up' ? 'Supersets' : 'Subsets';
+            nodes += `<text class="row-label ${dir}" x="24" y="${y1 + 5}">${label}</text>`;
+            if (!l1.length) {
+              nodes += `<text class="none" x="${CX}" y="${y1 + 5}">${dir === 'up' ? 'No supersets' : 'No subsets'}</text>`;
+              return;
+            }
+            const l2info = depth === 2 ? level2(l1, nbrs) : null;
+            l1.forEach((n, i) => {
+              const x = sx.at(i);
+              edges += edge(CX, yCenterEdge, x, yNodeEdge(y1, r1), dir, i);
+              const p = LAT.byName.get(n);
+              let spec;
+              if (dir === 'up') {
+                const emb = LAT.embed(c.prime, p.prime) || [];
+                spec = { on: emb, hot: p.prime.filter((q) => !emb.includes(q)) };
+              } else {
+                const gone = c.prime.find((_, k) => LAT.byName.get(PC.forteClass(c.prime.filter((__, j) => j !== k)).name) === p);
+                spec = { on: c.prime.filter((q) => q !== gone), ghost: [gone] };
+              }
+              nodes += `<g class="n l1 ${dir}" tabindex="0" role="button" aria-label="${n}" data-go="${n}" transform="translate(${x.toFixed(1)} ${y1})" style="--i:${i}">
+                <g class="pop"><circle class="hit" r="${(r1 + 4).toFixed(1)}"/><g transform="scale(${s1.toFixed(3)})">${LAT.clockInner(spec)}</g>
+                <text y="${(dir === 'up' ? -r1 - 12 : r1 + 24).toFixed(1)}">${n}</text></g></g>`;
+            });
+            if (l2info) {
+              const { l2, x1 } = l2info;
+              const s2 = spread(l2.length, 62);
+              l2.forEach((m, j) => {
+                const x = s2.at(j);
+                for (const n of l1) if (nbrs.get(n).has(m)) {
+                  const ya = dir === 'up' ? y1 - r1 - 4 : y1 + r1 + 4;
+                  const yb = dir === 'up' ? y2 + 7 : y2 - 7;
+                  edges += edge(x1.get(n), ya, x, yb, 'l2', j);
+                }
+                const off = (j % 2 ? 36 : 20) * (dir === 'up' ? -1 : 1);
+                nodes += `<g class="n l2 ${dir}" tabindex="0" role="button" aria-label="${m}" data-go="${m}" transform="translate(${x.toFixed(1)} ${y2})" style="--i:${j}">
+                  <g class="pop"><circle r="5.5"/><text y="${off + (dir === 'up' ? 0 : 5)}">${m}</text></g></g>`;
+              });
+            }
+          };
+          side('up');
+          side('down');
+
+          // ----- centre -----
+          const total = `${LAT.above(cur).size} supersets, ${LAT.below(cur).size} subsets in all`;
+          const center = `<g class="center"><g transform="translate(${CX} ${CY}) scale(1.75)">${LAT.clockInner({ on: c.prime, r: 38, dot: 6 })}</g></g>
+            <text class="c-name" x="${CX + 120}" y="${CY - 8}">${c.name}</text>
+            <text class="c-prime" x="${CX + 122}" y="${CY + 34}">${LAT.label(c.prime)}</text>
+            <text class="c-meta" x="${CX + 122}" y="${CY + 64}">${total}</text>`;
+
+          stage.innerHTML = edges + center + nodes;
+
+          // ----- trail and search -----
+          $('trail').innerHTML = trail.slice(-9).map((n, i, a) => {
+            const idx = trail.length - a.length + i;
+            return (i ? '<i>›</i>' : '') + `<button type="button" data-trail="${idx}"${idx === trail.length - 1 ? ' aria-current="step"' : ''}>${n}</button>`;
+          }).join('');
+          history.replaceState(null, '', '#' + cur);
+        }
+
+        function go(name) {
+          if (!LAT.byName.has(name) || name === cur) return;
+          cur = name;
+          trail.push(name);
+          render();
+        }
+
+        stage.addEventListener('click', (e) => {
+          const g = e.target.closest('[data-go]');
+          if (g) go(g.dataset.go);
+        });
+        stage.addEventListener('keydown', (e) => {
+          const g = e.target.closest('[data-go]');
+          if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go(g.dataset.go); }
+        });
+        $('trail').addEventListener('click', (e) => {
+          const b = e.target.closest('[data-trail]');
+          if (!b) return;
+          trail = trail.slice(0, Number(b.dataset.trail) + 1);
+          cur = trail[trail.length - 1];
+          render();
+        });
+        document.querySelectorAll('[data-depth]').forEach((b) => b.addEventListener('click', () => {
+          depth = Number(b.dataset.depth);
+          document.querySelectorAll('[data-depth]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+          render();
+        }));
+        $('q').addEventListener('input', (e) => {
+          const c = LAT.find(e.target.value);
+          if (c) go(c.name);
+        });
+
+        const start = decodeURIComponent(location.hash.slice(1));
+        if (LAT.byName.has(start)) { cur = start; trail = [start]; }
+        render();
+      })();
+    </script>
+  </body>
+</html>

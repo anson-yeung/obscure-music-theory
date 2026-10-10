@@ -1,0 +1,199 @@
+/* Set-class browser. Shared styles are in base.css. */
+
+.head { display: grid; gap: 28px; padding-top: clamp(16px, 4vh, 48px); padding-bottom: clamp(32px, 5vh, 56px); }
+@media (min-width: 901px) {
+  .head { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); align-items: end; gap: 20px 64px; }
+}
+
+/* ---------- filters ---------- */
+
+.filters { padding: clamp(28px, 4vh, 44px) 0; }
+.head .field input { font-size: clamp(1.6rem, 3vw, 2.4rem); }
+.fgrid { display: grid; gap: 40px 56px; align-items: start; }
+@media (min-width: 1101px) {
+  .fgrid { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+@media (max-width: 1100px) {
+  .vec-group { order: -1; }
+}
+.stack { display: grid; gap: 28px; align-content: start; min-width: 0; }
+.group { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.tw { overflow-x: auto; scrollbar-width: thin; }
+/* Every text choice (Any, Z, Not Z) is one width and every number another, in every row. */
+.filters .track { --num: 2.75rem; --wide: 4.6rem; width: max-content; }
+/* Any is wider than the numbers, so the thumb takes its position and width from the chosen button. */
+.filters .track .thumb { width: var(--tw, 0); transform: translateX(var(--tx, 0)); transition: transform 0.6s var(--ease), width 0.6s var(--ease); }
+.filters .track button { height: 40px; }
+.filters .track button.dim:not([aria-pressed='true']) { opacity: 0.28; }
+
+/* The interval vector: one field of six slots, each in its interval class's colour. */
+.vec { display: flex; align-items: flex-start; gap: 8px; max-width: 360px; }
+.vec .br { color: var(--muted); font: var(--w-display) 2.6rem/1 var(--font); padding-top: 1px; }
+.slot { display: grid; gap: 8px; justify-items: center; flex: 1 1 0; min-width: 0; }
+.slot input {
+  width: 100%;
+  padding: 4px 0 6px;
+  color: var(--text);
+  text-align: center;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--line-strong);
+  border-radius: 0;
+  outline: none;
+  font: var(--w-display) 1.9rem/1.1 var(--font);
+  transition: border-color 0.35s;
+}
+.slot input:focus, .slot input.set { border-bottom-color: var(--c); }
+.slot input::placeholder { color: #7f889a; }
+.slot input:focus::placeholder { color: transparent; }
+.slot b { color: var(--c); font-weight: var(--w-head); }
+
+/* The notes: optional, so closed until asked for. Closed, a line says what is chosen. */
+.notes { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--line); }
+.nhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.nhead .group { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.npool { color: var(--blue); font-weight: var(--w-head); letter-spacing: 0.04em; }
+.nbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+/* The keyboard opens by growing from nothing, so the page below it glides down rather than jumps. */
+.nbody { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 0.7s var(--ease), opacity 0.5s; }
+.nbody.open { grid-template-rows: 1fr; opacity: 1; }
+.nin { min-height: 0; overflow: hidden; }
+.nin .keys-scroll { margin-top: 16px; }
+
+/* ---------- results: a compact table, and a clock that stays put beside it ---------- */
+
+.results { padding-top: 28px; padding-bottom: 80px; }
+.rgrid { display: grid; gap: 32px; align-items: start; }
+@media (min-width: 901px) {
+  .rgrid { grid-template-columns: minmax(0, 1fr) clamp(300px, 32vw, 420px); gap: 40px; }
+}
+.rmain { min-width: 0; }
+.status { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; margin-bottom: 8px; }
+.count { font-weight: var(--w-label); font-size: 1.125rem; }
+
+.sc-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.sc-table th, .sc-table td { padding: 12px 10px; text-align: left; vertical-align: middle; transition: background 0.4s; }
+/* The row separator is a straight line along the bottom of the row, as wide as the highlight. */
+.sc-table th, .sc-table td { position: relative; }
+.sc-table th::after, .sc-table td::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line); }
+.sc-table thead th { white-space: nowrap; }
+/* The first and last cells carry the row's padding, so a highlight has room around the text. */
+.sc-table th:first-child, .sc-table td:first-child { padding-left: 16px; }
+.sc-table th:last-child, .sc-table td:last-child { padding-right: 16px; }
+.sc-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: var(--w-label);
+}
+.sc-table thead th::after { background: var(--line-strong); }
+.sc-table thead button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  font-weight: var(--w-label);
+  cursor: pointer;
+}
+.sc-table thead button::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border: solid currentColor;
+  border-width: 0 1.6px 1.6px 0;
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.4s var(--ease);
+}
+.sc-table thead button:hover::after { opacity: 0.5; }
+.sc-table th[aria-sort] button::after { opacity: 1; }
+.sc-table th[aria-sort='descending'] button::after { transform: translateY(2px) rotate(-135deg); }
+
+.c-forms button { flex-direction: row-reverse; }
+.c-forms, td.forms { text-align: right !important; }
+.sc-table tbody tr { cursor: pointer; }
+.sc-table tbody tr:hover td { background: rgba(255, 255, 255, 0.04); }
+.sc-table tbody tr.sel td { background: rgba(88, 196, 221, 0.12); }
+.sc-table tbody tr.found td { animation: found 1.8s var(--ease); }
+@keyframes found { from { background: rgba(244, 211, 94, 0.28); } }
+
+td.name { font-weight: var(--w-head); }
+.pick {
+  padding: 0;
+  background: none;
+  border: 0;
+  font-weight: var(--w-head);
+  cursor: pointer;
+  transition: color 0.25s;
+}
+.pick:hover, .pick[aria-pressed='true'] { color: var(--blue); }
+td.prime { letter-spacing: 0.04em; }
+
+.none { padding: 32px 0; font-size: 1.125rem; }
+
+/* The clock stays in view while the table scrolls; the set class chosen in the table is on it. */
+.panel {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+.panel .clock { width: min(100%, 420px, max(240px, calc(100vh - 260px))); }
+.pinfo { display: grid; gap: 2px; justify-items: center; }
+.sel-name { font-size: 1.75rem; font-weight: var(--w-head); letter-spacing: -0.01em; line-height: 1.2; }
+.sel-prime { min-height: 1.2em; color: var(--blue); font-size: clamp(2rem, 3vw, 2.6rem); font-weight: var(--w-display); letter-spacing: var(--track); line-height: 1.2; }
+.plinks { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 20px; margin-top: 6px; }
+.pinfo .link { font-size: 0.9375rem; }
+/* Where the chosen class sits in the notes: every place is a button, and the chosen one is yellow like its keys. */
+.where { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+.where .key { flex: none; }
+.where .seg { justify-content: center; max-height: 7.5rem; overflow-y: auto; scrollbar-width: thin; }
+.where .seg button { padding: 6px 10px; letter-spacing: 0.04em; }
+.where .seg button[aria-pressed='true'] { color: var(--ink); background: var(--yellow); }
+.panel .play { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 4px; transition: opacity 0.5s var(--ease); }
+.panel.is-empty .play { opacity: 0.35; pointer-events: none; }
+.panel .clock .node { pointer-events: none; }
+
+/* On a narrow screen the clock docks to the bottom edge, small, beside the name and the buttons. */
+@media (max-width: 900px) {
+  .panel {
+    bottom: 0;
+    top: auto;
+    z-index: 2;
+    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-areas: 'clock info' 'clock play';
+    gap: 6px 16px;
+    justify-items: start;
+    align-items: center;
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 10px var(--gutter);
+    text-align: left;
+    background: var(--band);
+    border-top: 1px solid var(--line-strong);
+  }
+  .panel .clock { grid-area: clock; width: 112px; }
+  .pinfo { grid-area: info; justify-items: start; }
+  .plinks { justify-content: flex-start; }
+  .where { justify-content: flex-start; gap: 10px; margin-top: 4px; }
+  .where .key { font-size: 0.9375rem; }
+  .where .seg { justify-content: flex-start; max-height: 4.5rem; }
+  .panel .play { grid-area: play; justify-content: flex-start; gap: 8px; margin: 0; }
+  .panel .btn { padding: 6px 11px; font-size: 0.875rem; }
+  .sel-name { font-size: 1.25rem; }
+  .sel-prime { font-size: 1.4rem; }
+}
+
+@media (max-width: 760px) {
+  .tbl-wrap { overflow-x: auto; }
+  .sc-table { width: 100%; min-width: 480px; margin: 0; }
+  .sc-table th:first-child, .sc-table td:first-child { padding-left: 12px; }
+  .sc-table th:last-child, .sc-table td:last-child { padding-right: 12px; }
+  .sc-table thead th { position: static; }
+}

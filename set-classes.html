@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Set classes – Obscure Music Theory</title>
+    <meta name="description" content="All 224 pitch-class set classes, searchable and filterable by cardinality, interval vector, Z-relation and number of distinct forms." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/set-classes.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html">Obscure Music Theory</a>
+        <nav aria-label="Pages">
+          <a href="calculator.html">Calculator</a>
+          <a href="transformations.html">Transformations</a>
+          <a href="set-classes.html" aria-current="page">Set classes</a>
+          <a href="subsets-and-supersets.html">Subsets and supersets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="head wrap rise">
+        <h1 class="title">Set classes</h1>
+        <div class="field">
+          <input id="q" type="text" aria-label="Search" autocomplete="off" spellcheck="false" placeholder="4-Z15 or 0146" />
+        </div>
+      </section>
+
+      <section class="band filters" aria-label="Filters">
+        <div class="wrap fgrid">
+          <div class="stack">
+            <div class="group">
+              <p class="key" id="l-card">Cardinality</p>
+              <div class="tw"><div class="track" id="f-card" role="group" aria-labelledby="l-card"></div></div>
+            </div>
+            <div class="group">
+              <p class="key" id="l-z">Z-relation</p>
+              <div class="tw"><div class="track" id="f-z" role="group" aria-labelledby="l-z"></div></div>
+            </div>
+            <div class="group">
+              <p class="key" id="l-forms">Distinct forms</p>
+              <div class="tw"><div class="track" id="f-forms" role="group" aria-labelledby="l-forms"></div></div>
+            </div>
+          </div>
+          <div class="group vec-group">
+            <p class="key" id="l-icv">Interval vector (leave blank = any)</p>
+            <div class="vec" id="f-icv" role="group" aria-labelledby="l-icv"></div>
+          </div>
+        </div>
+
+        <div class="wrap notes">
+          <div class="nhead">
+            <div class="group">
+              <p class="key" id="l-notes">Specify notes (if any)</p>
+              <p class="npool" id="npool" aria-live="polite"></p>
+            </div>
+            <div class="nbtns">
+              <button type="button" class="btn" id="notes-clear" hidden>Clear notes</button>
+              <button type="button" class="btn" id="notes-toggle" aria-expanded="false" aria-controls="notes-body">Choose notes</button>
+            </div>
+          </div>
+          <div class="nbody" id="notes-body" inert>
+            <div class="nin">
+              <div class="keys-scroll" id="keys-scroll"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="results wrap">
+        <div class="rgrid">
+          <div class="rmain">
+            <div class="status">
+              <p class="count" id="count" aria-live="polite"></p>
+              <button type="button" class="btn" id="clear" hidden>Clear filters</button>
+            </div>
+            <div class="tbl-wrap">
+              <table class="sc-table" id="sc-table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="c-name" aria-sort="ascending"><button type="button" data-sort="name">Forte name</button></th>
+                    <th scope="col" class="c-prime"><button type="button" data-sort="prime">Prime form</button></th>
+                    <th scope="col" class="c-icv"><button type="button" data-sort="icv">Interval vector</button></th>
+                    <th scope="col" class="c-z">Z-mate</th>
+                    <th scope="col" class="c-forms"><button type="button" data-sort="forms">Forms</button></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="none" id="none" hidden>No set class matches.</p>
+          </div>
+
+          <aside class="panel is-empty" aria-label="Selected set class">
+            <div class="clock" id="clock"></div>
+            <div class="pinfo" aria-live="polite">
+              <p class="sel-name" id="p-name">Choose a set class</p>
+              <p class="sel-prime" id="p-prime"></p>
+              <div class="plinks">
+                <button type="button" class="link" id="p-comp" hidden></button>
+                <a class="link" id="p-calc" href="calculator.html" hidden>Open in calculator</a>
+                <a class="link" id="p-sub" href="subsets-and-supersets.html" hidden>Subsets and supersets</a>
+              </div>
+              <div class="where" id="where" hidden>
+                <p class="key" id="w-label"></p>
+                <div class="seg" id="w-list" role="group" aria-labelledby="w-label"></div>
+              </div>
+            </div>
+            <div class="play">
+              <button type="button" class="btn" id="play-notes"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play notes</button>
+              <button type="button" class="btn" id="play-chord"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 0.5l8 4.5-8 4.5z" fill="currentColor" /></svg>Play chord</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/forte-table.js"></script>
+    <script src="js/theory.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/set-classes.js"></script>
+  </body>
+</html>

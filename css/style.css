@@ -1,0 +1,98 @@
+/* Calculator page. Shared styles are in base.css. */
+
+.summary, .field-wrap, .clock-wrap, .keys-wrap { animation: rise 1s var(--ease) both; }
+.field-wrap { animation-delay: 0.12s; }
+.clock-wrap { animation-delay: 0.2s; }
+.summary { animation-delay: 0.3s; }
+.keys-wrap { animation-delay: 0.45s; }
+
+/* ---------- the instrument: input, clock and keyboard ---------- */
+
+.top {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px var(--gutter) 56px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+.rail { display: contents; }
+.field-wrap { order: 2; min-width: 0; }
+.summary { order: 3; }
+.clock-wrap { order: 4; position: relative; justify-self: center; width: min(100%, 360px); }
+.keys-wrap { order: 5; min-width: 0; }
+
+.summary { transition: opacity 0.6s var(--ease); }
+.is-empty .summary { opacity: 0; }
+
+/* The keyboard is a full-width band along the bottom of the first screen. */
+@media (min-width: 901px) {
+  .top {
+    max-width: none;
+    min-height: min(calc(100vh - var(--head-h)), 1100px);
+    min-height: min(calc(100dvh - var(--head-h)), 1100px);
+    padding: 24px 0 0;
+    grid-template-columns: calc(var(--edge) - 20px) repeat(12, minmax(0, 1fr)) calc(var(--edge) - 20px);
+    grid-template-rows: auto 1fr auto;
+    column-gap: 20px;
+    row-gap: 0;
+    /* On a short window the input text and some spacing give way, so the keyboard still fits. */
+    --title: clamp(1.8rem, min(5vw, 7dvh), 3.9rem);
+  }
+  .field-wrap { grid-column: 2 / 8; grid-row: 1; margin-top: clamp(8px, 3dvh, 5vh); }
+  .summary { grid-column: 2 / 8; grid-row: 2; align-self: end; padding: min(40px, 3dvh) 0 min(78px, 10dvh); }
+  .clock-wrap { grid-column: 8 / 14; grid-row: 1 / 3; align-self: center; justify-self: center; width: min(100%, 410px, max(200px, calc(74dvh - 100px))); }
+  .keys-wrap { grid-column: 1 / -1; grid-row: 3; padding: 0; background: var(--band); }
+  .keys-wrap .keys-scroll { padding: 0; }
+}
+
+/* ---------- play buttons ---------- */
+
+.play { display: flex; gap: 8px; margin-top: 18px; transition: opacity 0.5s var(--ease); }
+.is-empty .play { opacity: 0.35; pointer-events: none; }
+
+/* ---------- properties ---------- */
+
+.props-wrap { display: grid; grid-template-columns: minmax(0, 1fr); gap: 40px 72px; align-items: start; }
+@media (min-width: 1001px) {
+  .props-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+}
+
+/* ---------- interval classes ---------- */
+
+.ic {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  align-content: start;
+  padding: 24px 28px 28px;
+  border: 1px solid var(--line-strong);
+}
+.ic-box { display: grid; grid-template-columns: auto repeat(6, minmax(3.2rem, 1fr)); width: min(100%, 420px); }
+.ic-box > span { padding: 8px 12px; text-align: center; transition: background 0.3s; }
+.ic-box > span:not(:nth-child(7n)) { border-right: 1px solid #5d677a; }
+.ic-box > span:nth-child(-n + 7) { border-bottom: 1px solid #5d677a; }
+.ic-lab { font-weight: var(--w-label); text-align: left !important; }
+.ic-key { color: var(--c); font-size: 1.0625rem; font-weight: var(--w-head); outline: none; }
+.ic-count { font-size: 1.375rem; font-weight: var(--w-head); }
+.ic-box > .active { background: rgba(255, 255, 255, 0.07); }
+.ic-box > .ic-cell { cursor: pointer; }
+
+.ic-clock { width: min(100%, 230px); margin-top: 8px; }
+.ic-clock svg { display: block; width: 100%; height: auto; overflow: visible; }
+.ic-clock .ring { fill: none; stroke: var(--line-strong); stroke-width: 1.5; }
+.ic-clock .tickl { fill: var(--text); font-size: 15px; font-weight: var(--w-label); text-anchor: middle; dominant-baseline: central; }
+.chord {
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.9s var(--ease), opacity 0.4s, stroke-width 0.3s;
+}
+.chord.on { opacity: 0.95; stroke-dashoffset: 0; }
+.chord.on.dim { opacity: 0.1; }
+.chord.on.hl { stroke-width: 4.5; }
+.chord.on.hit { stroke-width: 7; opacity: 1; }
+.pt { fill: var(--text); transform-box: fill-box; transform-origin: center; transform: scale(0); transition: transform 0.5s var(--spring); }
+.pt.on { transform: scale(1); }

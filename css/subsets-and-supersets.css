@@ -1,0 +1,68 @@
+/* Subsets and supersets. Shared styles are in base.css. */
+
+.head { display: grid; gap: 24px 48px; padding-top: clamp(16px, 4vh, 48px); padding-bottom: clamp(28px, 5vh, 52px); }
+@media (min-width: 901px) {
+  .head { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: end; }
+}
+.head .title { font-size: clamp(2.2rem, 4.4vw, 3.4rem); }
+.head .field input { font-size: clamp(1.6rem, 3vw, 2.4rem); }
+
+/* ---------- the map of all classes ---------- */
+
+.map { padding: 0; }
+.scroller { position: relative; overflow-x: auto; scrollbar-width: thin; }
+#cv { display: block; margin: 0 auto; cursor: default; }
+.tip {
+  position: absolute;
+  z-index: 2;
+  padding: 6px 10px;
+  background: var(--hub);
+  border-radius: 6px;
+  font-weight: var(--w-label);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+.tip span { margin-left: 8px; color: var(--blue); }
+
+/* ---------- the chosen class, with what lies directly above and below ---------- */
+
+.stage-wrap { overflow-x: auto; scrollbar-width: thin; padding-top: clamp(24px, 5vh, 48px); padding-bottom: 72px; }
+#stage { display: block; width: 100%; min-width: 900px; height: auto; }
+
+.edge {
+  fill: none;
+  stroke-width: 1.3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.9s var(--ease) forwards;
+  animation-delay: calc(var(--i, 0) * 22ms + 120ms);
+}
+.edge.up { stroke: rgba(244, 211, 94, 0.5); }
+.edge.down { stroke: rgba(88, 196, 221, 0.5); }
+
+.n { cursor: pointer; outline: none; }
+.n .pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pop 0.7s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 28ms + 150ms);
+  transition: transform 0.5s var(--spring);
+}
+.n:hover .pop, .n:focus-visible .pop { transform: scale(1.12); }
+.n text { fill: var(--text); font-size: 15px; font-weight: var(--w-label); text-anchor: middle; pointer-events: none; }
+.hit { fill: transparent; stroke: transparent; stroke-width: 2; }
+.n:focus-visible .hit { stroke: var(--yellow); }
+
+.row-label { font-size: 16px; font-weight: var(--w-head); }
+.row-label.up { fill: var(--yellow); }
+.row-label.down { fill: var(--blue); }
+.none { fill: var(--muted); font-size: 16px; text-anchor: middle; }
+
+.center { transform-box: fill-box; transform-origin: center; animation: pop 0.8s var(--ease) both; }
+.c-name { font-size: 56px; font-weight: var(--w-display); letter-spacing: var(--track); fill: var(--text); }
+.c-prime { font-size: 28px; fill: var(--blue); letter-spacing: 0.02em; }
+.center .mc-dot { transform-box: fill-box; transform-origin: center; }
+.center .mc-dot.ping { animation: pulse 0.6s var(--ease); }
+.play { display: flex; gap: 8px; }
+.play .btn { font-size: 16px; }

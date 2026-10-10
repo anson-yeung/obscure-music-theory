@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Map variants – Subsets and supersets</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="../css/base.css" />
+    <style>
+      .pick {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: rgba(8, 10, 15, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+      }
+      .pick .in { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 32px; padding-top: 14px; padding-bottom: 14px; }
+      .pick .field { flex: 0 1 15rem; }
+      .pick .field input { font-size: 1.5rem; }
+      .pick .seg button { min-width: 0; padding: 6px 10px; font-size: 0.9rem; }
+      .pick .read { margin-left: auto; font-weight: var(--w-label); white-space: nowrap; }
+      .pick .read .sub { color: var(--blue); }
+      .pick .read .sup { color: var(--yellow); margin-left: 16px; }
+
+      .lead { padding-top: clamp(8px, 3vh, 32px); padding-bottom: clamp(20px, 4vh, 40px); }
+      .lead .title { font-size: clamp(2.2rem, 4.4vw, 3.4rem); }
+      .lead p { margin-top: 12px; max-width: 38rem; color: var(--muted); }
+
+      .v { padding-bottom: 56px; }
+      .vhead { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 20px; align-items: baseline; padding-top: 28px; padding-bottom: 18px; }
+      .vhead .num { font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: var(--w-display); line-height: 1; color: var(--blue); letter-spacing: var(--track); }
+      .vhead h2 { font-size: clamp(1.5rem, 2.8vw, 2rem); }
+      .vhead p { grid-column: 2; color: var(--muted); max-width: 44rem; margin-top: 4px; }
+
+      .scroller { position: relative; overflow-x: auto; scrollbar-width: thin; }
+      .scroller canvas { display: block; margin: 0 auto; cursor: default; }
+      .tip {
+        position: absolute;
+        z-index: 2;
+        padding: 6px 10px;
+        background: var(--hub);
+        border-radius: 6px;
+        font-weight: var(--w-label);
+        white-space: nowrap;
+        pointer-events: none;
+        transform: translate(-50%, -100%);
+      }
+      .tip span { margin-left: 8px; color: var(--blue); }
+      .foot { padding: 16px 0 72px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="../subsets-and-supersets.html">Obscure Music Theory</a>
+        <nav aria-label="Variants">
+          <a href="#v1">1 Fade</a>
+          <a href="#v2">2 Light cone</a>
+          <a href="#v3">3 Orbit</a>
+          <a href="#v4">4 Ridgeline</a>
+          <a href="#v5">5 Spectrum</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="wrap lead rise">
+        <h1 class="title">Five maps</h1>
+        <p>The same 223 classes, the same colours and the same chosen class, drawn five ways. Choose a class in any map, or here, and all five follow. Only the map is mocked; the part below it stays as it is.</p>
+      </section>
+
+      <div class="pick">
+        <div class="wrap in">
+          <div class="field small"><input id="q" type="text" aria-label="Search" autocomplete="off" spellcheck="false" placeholder="4-Z15 or 0146" /></div>
+          <div class="seg" id="chips" aria-label="Try these"></div>
+          <div class="read" id="read"></div>
+        </div>
+      </div>
+
+      <section class="v" id="v1">
+        <div class="wrap vhead">
+          <span class="num">1</span>
+          <h2>Fade</h2>
+          <p>The map you have, with the thicket cut away. Only the lines one note away are drawn. Everything further is a dot that grows fainter the more notes it is from your class, and a soft wash goes from blue below to yellow above. Hover a lit dot to see the path back to your class.</p>
+        </div>
+        <div class="band"><div class="scroller"><canvas aria-label="Map, variant 1"></canvas><div class="tip" hidden></div></div></div>
+      </section>
+
+      <section class="v" id="v2">
+        <div class="wrap vhead">
+          <span class="num">2</span>
+          <h2>Light cone</h2>
+          <p>No lines at all. Your class is a point of light, and what it sits inside opens upward as a beam that fades as it climbs. What lies inside it narrows to a blue point below. The shape is how far its family reaches.</p>
+        </div>
+        <div class="band"><div class="scroller"><canvas aria-label="Map, variant 2"></canvas><div class="tip" hidden></div></div></div>
+      </section>
+
+      <section class="v" id="v3">
+        <div class="wrap vhead">
+          <span class="num">3</span>
+          <h2>Orbit</h2>
+          <p>The map bent into rings: one note at the centre, twelve at the rim. Subsets are inside your class's ring, in blue, and supersets outside it, in yellow, with a gradient that warms as it goes outward. Only direct neighbours get an arc.</p>
+        </div>
+        <div class="band"><div class="scroller"><canvas aria-label="Map, variant 3"></canvas><div class="tip" hidden></div></div></div>
+      </section>
+
+      <section class="v" id="v4">
+        <div class="wrap vhead">
+          <span class="num">4</span>
+          <h2>Ridgeline</h2>
+          <p>Each row of the map becomes a ridge, like stacked mountain ranges. Related classes push up peaks, with a gradient fill under them, and the nearer a class is, the higher its peak. Unrelated ones stay as a flat ripple.</p>
+        </div>
+        <div class="band"><div class="scroller"><canvas aria-label="Map, variant 4"></canvas><div class="tip" hidden></div></div></div>
+      </section>
+
+      <section class="v" id="v5">
+        <div class="wrap vhead">
+          <span class="num">5</span>
+          <h2>Spectrum</h2>
+          <p>Every row is a strip of small bars, like an audio meter. Related classes stand tall in colour and the rest lie flat, with a count at the end of each row (31 of 38). The quietest, most typographic option. Hover a bar to see its direct neighbours.</p>
+        </div>
+        <div class="band"><div class="scroller"><canvas aria-label="Map, variant 5"></canvas><div class="tip" hidden></div></div></div>
+      </section>
+
+      <div class="wrap foot">Tell me a number, or mix: for example the lines of 1 with the wash of 3.</div>
+    </main>
+
+    <script src="../js/forte-table.js"></script>
+    <script src="../js/theory.js"></script>
+    <script src="../js/lattice.js"></script>
+    <script>
+      (() => {
+        const $ = (id) => document.getElementById(id);
+        const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const css = getComputedStyle(document.documentElement);
+        const col = (v) => css.getPropertyValue(v).trim();
+        const BLUE = col('--blue');
+        const YELLOW = col('--yellow');
+        const TEXT = col('--text');
+        const MUTED = col('--muted');
+        const BAND = col('--band');
+        const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+        const B = hex(BLUE);
+        const Y = hex(YELLOW);
+        const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+        const WHITE = [243, 245, 250];
+        const clamp = (v) => Math.max(0, Math.min(1, v));
+        const FONT = 'Manrope, system-ui, sans-serif';
+
+        // ---------------------------------------------------------------- the classes, in rows
+
+        const rows = new Map();
+        for (let k = 1; k <= 12; k++) rows.set(k, LAT.classes.filter((c) => c.prime.length === k).map((c) => c.name));
+        const kOf = (n) => LAT.byName.get(n).prime.length;
+
+        // Ordered so the lines stay short: sweep up and down, each row by where its neighbours sit.
+        const REF = 900;
+        const CAP = 64;
+        const refX = new Map();
+        const place = (k) => {
+          const names = rows.get(k);
+          const sp = Math.min(CAP, REF / names.length);
+          names.forEach((n, i) => refX.set(n, (i - (names.length - 1) / 2) * sp));
+        };
+        const bary = (n, nbrs) => {
+          const xs = [...nbrs.get(n)].map((m) => refX.get(m));
+          return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : refX.get(n);
+        };
+        const sortRow = (k, nbrs) => {
+          const names = rows.get(k);
+          const b = new Map(names.map((n) => [n, bary(n, nbrs)]));
+          names.sort((a, c) => b.get(a) - b.get(c));
+          place(k);
+        };
+        for (let k = 1; k <= 12; k++) place(k);
+        for (let it = 0; it < 8; it++) {
+          for (let k = 2; k <= 12; k++) sortRow(k, LAT.children);
+          for (let k = 11; k >= 1; k--) sortRow(k, LAT.parents);
+        }
+
+        // ---------------------------------------------------------------- the chosen class
+
+        let sel = null;
+        let down = new Map();
+        let up = new Map();
+        let t0 = 0;
+        const STEP = 70;
+        const SPAN = 12 * STEP + 300;
+
+        /** What a class is to the chosen one, and how far into the spread the light has come. */
+        function info(n) {
+          if (n === sel) return { role: 'sel', a: 1, h: 0 };
+          const el = performance.now() - t0;
+          if (down.has(n)) return { role: 'down', a: clamp((el - down.get(n) * STEP) / 240), h: down.get(n) };
+          if (up.has(n)) return { role: 'up', a: clamp((el - up.get(n) * STEP) / 240), h: up.get(n) };
+          return null;
+        }
+        const roleRgb = (role) => (role === 'down' ? B : role === 'up' ? Y : WHITE);
+        /** One note away is brightest, and each step further fades. */
+        const decay = (h, rate = 0.13, floor = 0.22) => Math.max(floor, 1 - (h - 1) * rate);
+
+        /** Classes lying between `low` and `high` (low sits inside high), for tracing a path. */
+        function between(low, high) {
+          const set = new Set();
+          for (const x of [low, ...LAT.above(low).keys()]) if (x === high || LAT.above(x).has(high)) set.add(x);
+          return set;
+        }
+        function chain(hov) {
+          const set = up.has(hov) ? between(sel, hov) : down.has(hov) ? between(hov, sel) : null;
+          if (!set) return null;
+          const list = [];
+          for (const p of set) for (const c of LAT.children.get(p)) if (set.has(c)) list.push([p, c]);
+          return list;
+        }
+
+        // ---------------------------------------------------------------- shared lattice positions
+
+        const SIDE = 140;
+        function latticeLayout(W, H) {
+          const pos = new Map();
+          const yOf = (k) => 32 + (12 - k) * ((H - 64) / 11);
+          for (const [k, names] of rows) {
+            const sp = Math.min(CAP, (W - SIDE) / names.length);
+            names.forEach((n, i) => pos.set(n, { x: W / 2 + 24 + (i - (names.length - 1) / 2) * sp, y: yOf(k), sp }));
+          }
+          return { pos, yOf };
+        }
+        function nearest(pos, x, y, r = 12) {
+          let best = null;
+          let bd = r * r;
+          for (const [n, p] of pos) {
+            const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+            if (d < bd) { bd = d; best = n; }
+          }
+          return best;
+        }
+        function rowNumbers(ctx, yOf) {
+          ctx.font = `500 14px ${FONT}`;
+          ctx.fillStyle = MUTED;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'left';
+          for (const k of rows.keys()) ctx.fillText(String(k), 22, yOf(k));
+        }
+        /** The chosen class's name, on a patch of the band so nothing cuts through it. */
+        function selLabel(ctx, p, W, above = 20) {
+          ctx.font = `600 16px ${FONT}`;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'left';
+          const w = ctx.measureText(sel).width;
+          const left = p.x > W - 120;
+          const x = left ? p.x - 14 - w : p.x + 14;
+          const y = p.y < 60 ? p.y + 22 : p.y - above;
+          ctx.fillStyle = BAND;
+          ctx.fillRect(x - 5, y - 12, w + 10, 24);
+          ctx.fillStyle = TEXT;
+          ctx.fillText(sel, x, y);
+        }
+        function glowDot(ctx, x, y, r, c, a, blur = 10) {
+          ctx.save();
+          ctx.shadowColor = rgba(c, a);
+          ctx.shadowBlur = blur;
+          ctx.fillStyle = rgba(c, a);
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, 7);
+          ctx.fill();
+          ctx.restore();
+        }
+        function gradLine(ctx, a, b, c0, c1, w = 1.4) {
+          const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+          g.addColorStop(0, c0);
+          g.addColorStop(1, c1);
+          ctx.strokeStyle = g;
+          ctx.lineWidth = w;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+        /** Direct neighbours of `n`, as [name, role] pairs. */
+        const neighbours = (n) => [...[...LAT.parents.get(n)].map((m) => [m, 'up']), ...[...LAT.children.get(n)].map((m) => [m, 'down'])];
+
+        // ================================================================ 1 Fade
+
+        function fade(v) {
+          let L;
+          const layout = () => { L = latticeLayout(v.W, v.H); };
+          const draw = () => {
+            const { ctx, W, H } = v;
+            const { pos, yOf } = L;
+            const sp = pos.get(sel);
+            // the wash: yellow above the chosen row, blue below it
+            const g = ctx.createLinearGradient(0, 0, 0, H);
+            const s = clamp(sp.y / H);
+            g.addColorStop(0, rgba(Y, 0.1));
+            g.addColorStop(s, rgba(Y, 0));
+            g.addColorStop(s, rgba(B, 0));
+            g.addColorStop(1, rgba(B, 0.12));
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, W, H);
+            rowNumbers(ctx, yOf);
+
+            // plain dots for what is not related
+            ctx.fillStyle = rgba([170, 179, 197], 0.3);
+            for (const [n, p] of pos) {
+              if (n === sel || up.has(n) || down.has(n)) continue;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 2.6, 0, 7);
+              ctx.fill();
+            }
+
+            // one note away: a line that goes from white to the colour
+            for (const [m, role] of neighbours(sel)) {
+              const i = info(m);
+              ctx.globalAlpha = i.a;
+              gradLine(ctx, sp, pos.get(m), rgba(WHITE, 0.6), rgba(roleRgb(role), 0.55), 1.5);
+            }
+            ctx.globalAlpha = 1;
+
+            // the path back from a hovered dot
+            if (v.hov && v.hov !== sel) {
+              const list = chain(v.hov);
+              const c = up.has(v.hov) ? Y : B;
+              ctx.lineWidth = 1.8;
+              ctx.strokeStyle = rgba(c, 0.85);
+              ctx.beginPath();
+              for (const [p, q] of list || neighbours(v.hov).map(([m, role]) => (role === 'up' ? [v.hov, m] : [m, v.hov]))) {
+                ctx.moveTo(pos.get(p).x, pos.get(p).y);
+                ctx.lineTo(pos.get(q).x, pos.get(q).y);
+              }
+              ctx.stroke();
+            }
+
+            for (const [n, p] of pos) {
+              const i = info(n);
+              if (!i || i.role === 'sel') continue;
+              const al = i.a * decay(i.h, 0.14, 0.24);
+              glowDot(ctx, p.x, p.y, (5.8 - Math.min(i.h - 1, 4) * 0.55) * (0.6 + 0.4 * i.a), roleRgb(i.role), al, 9 * al);
+            }
+            glowDot(ctx, sp.x, sp.y, 7, WHITE, 1, 16);
+            selLabel(ctx, sp, W);
+            if (v.hov) {
+              const p = pos.get(v.hov);
+              ctx.strokeStyle = TEXT;
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 9, 0, 7);
+              ctx.stroke();
+            }
+          };
+          return { layout, draw, hit: (x, y) => nearest(L.pos, x, y), anchor: (n) => ({ x: L.pos.get(n).x, y: L.pos.get(n).y - 14 }) };
+        }
+
+        // ================================================================ 2 Light cone
+
+        function cone(v) {
+          let L;
+          const layout = () => { L = latticeLayout(v.W, v.H); };
+
+          /** Smooth curve through points, passing through the midpoints between them. */
+          function smooth(ctx, pts) {
+            ctx.lineTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length - 1; i++) {
+              const mx = (pts[i].x + pts[i + 1].x) / 2;
+              const my = (pts[i].y + pts[i + 1].y) / 2;
+              ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+            }
+            ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+          }
+
+          /** The outline of everything that is lit on one side, from the chosen class outward. */
+          function shape(ctx, set, dir, apex, prog) {
+            const k0 = kOf(sel);
+            const left = [];
+            const right = [];
+            for (let k = k0 - dir; k >= 1 && k <= 12; k -= dir) {
+              const xs = rows.get(k).filter((n) => set.has(n)).map((n) => L.pos.get(n).x);
+              if (!xs.length) continue;
+              const y = L.yOf(k);
+              const pad = 16 + Math.min(10, (3 / xs.length) * 6);
+              left.push({ x: Math.min(...xs) - pad, y });
+              right.push({ x: Math.max(...xs) + pad, y });
+            }
+            if (!left.length) return null;
+            const far = left[left.length - 1].y;
+            const tip = { x: (left[left.length - 1].x + right[right.length - 1].x) / 2, y: far + dir * 18 };
+            ctx.save();
+            const reach = prog * (Math.abs(far - apex.y) + 40);
+            ctx.beginPath();
+            if (dir < 0) ctx.rect(0, apex.y - reach, v.W, reach + 20);
+            else ctx.rect(0, apex.y - 20, v.W, reach + 20);
+            ctx.clip();
+            ctx.beginPath();
+            ctx.moveTo(apex.x, apex.y);
+            smooth(ctx, [apex, ...left, tip, ...right.slice().reverse(), apex]);
+            ctx.closePath();
+            return { far };
+          }
+
+          const draw = () => {
+            const { ctx, W } = v;
+            const { pos, yOf } = L;
+            const sp = pos.get(sel);
+            const prog = clamp((performance.now() - t0) / (SPAN - 200));
+            rowNumbers(ctx, yOf);
+
+            for (const [set, dir, c] of [[up, -1, Y], [down, 1, B]]) {
+              const sh = shape(ctx, set, dir, sp, prog);
+              if (!sh) continue;
+              const g = ctx.createLinearGradient(0, sp.y, 0, sh.far);
+              g.addColorStop(0, rgba(c, 0.34));
+              g.addColorStop(0.55, rgba(c, 0.12));
+              g.addColorStop(1, rgba(c, 0.02));
+              ctx.fillStyle = g;
+              ctx.fill();
+              const e = ctx.createLinearGradient(0, sp.y, 0, sh.far);
+              e.addColorStop(0, rgba(c, 0.6));
+              e.addColorStop(1, rgba(c, 0.05));
+              ctx.strokeStyle = e;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+              ctx.restore();
+            }
+
+            for (const [n, p] of pos) {
+              const i = info(n);
+              if (i && i.role !== 'sel') {
+                glowDot(ctx, p.x, p.y, 4.2 * (0.6 + 0.4 * i.a), roleRgb(i.role), i.a * decay(i.h, 0.07, 0.55), 8);
+              } else if (!i) {
+                ctx.fillStyle = rgba([170, 179, 197], 0.22);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2.6, 0, 7);
+                ctx.fill();
+              }
+            }
+
+            if (v.hov && v.hov !== sel) {
+              ctx.lineWidth = 1.6;
+              ctx.strokeStyle = rgba(WHITE, 0.7);
+              ctx.beginPath();
+              for (const [m] of neighbours(v.hov)) {
+                ctx.moveTo(pos.get(v.hov).x, pos.get(v.hov).y);
+                ctx.lineTo(pos.get(m).x, pos.get(m).y);
+              }
+              ctx.stroke();
+            }
+            glowDot(ctx, sp.x, sp.y, 7.5, WHITE, 1, 22);
+            selLabel(ctx, sp, W);
+            if (v.hov) {
+              const p = pos.get(v.hov);
+              ctx.strokeStyle = TEXT;
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 9, 0, 7);
+              ctx.stroke();
+            }
+          };
+          return { layout, draw, hit: (x, y) => nearest(L.pos, x, y), anchor: (n) => ({ x: L.pos.get(n).x, y: L.pos.get(n).y - 14 }) };
+        }
+
+        // ================================================================ 3 Orbit
+
+        function orbit(v) {
+          let cx = 0;
+          let cy = 0;
+          let R = 0;
+          const pos = new Map();
+          const rOf = (k) => ((k - 1) / 11) * R;
+          const layout = () => {
+            cx = v.W / 2;
+            cy = v.H / 2;
+            R = v.H / 2 - 28;
+            for (const [k, names] of rows) {
+              names.forEach((n, i) => {
+                const a = -Math.PI / 2 + ((i + 0.5) / names.length - 0.5) * 2 * Math.PI;
+                pos.set(n, { x: cx + rOf(k) * Math.cos(a), y: cy + rOf(k) * Math.sin(a), a });
+              });
+            }
+          };
+          const curve = (ctx, a, b) => {
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.quadraticCurveTo(cx + (a.x + b.x - 2 * cx) * 0.3, cy + (a.y + b.y - 2 * cy) * 0.3, b.x, b.y);
+            ctx.stroke();
+          };
+          const draw = () => {
+            const { ctx, W, H } = v;
+            const sp = pos.get(sel);
+            const ks = kOf(sel);
+
+            // the wash: blue inside the chosen ring, yellow outside it
+            const out = R + 28;
+            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, out);
+            const s = clamp(rOf(ks) / out);
+            g.addColorStop(0, rgba(B, 0.18));
+            g.addColorStop(s, rgba(B, 0));
+            g.addColorStop(s, rgba(Y, 0));
+            g.addColorStop(1, rgba(Y, 0.13));
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(cx, cy, out, 0, 7);
+            ctx.fill();
+
+            ctx.lineWidth = 1;
+            for (let k = 2; k <= 12; k++) {
+              ctx.strokeStyle = k === ks ? 'rgba(243,245,250,0.22)' : 'rgba(170,179,197,0.1)';
+              ctx.beginPath();
+              ctx.arc(cx, cy, rOf(k), 0, 7);
+              ctx.stroke();
+            }
+            ctx.font = `500 12px ${FONT}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            for (let k = 2; k <= 12; k++) {
+              const y = cy + rOf(k);
+              ctx.fillStyle = BAND;
+              ctx.fillRect(cx - 8, y - 8, 16, 16);
+              ctx.fillStyle = k === ks ? TEXT : MUTED;
+              ctx.fillText(String(k), cx, y);
+            }
+
+            for (const [n, p] of pos) {
+              if (n === sel || up.has(n) || down.has(n)) continue;
+              ctx.fillStyle = rgba([170, 179, 197], 0.32);
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 2.4, 0, 7);
+              ctx.fill();
+            }
+
+            ctx.lineWidth = 1.5;
+            for (const [m, role] of neighbours(sel)) {
+              const i = info(m);
+              const q = pos.get(m);
+              const gr = ctx.createLinearGradient(sp.x, sp.y, q.x, q.y);
+              gr.addColorStop(0, rgba(WHITE, 0.6));
+              gr.addColorStop(1, rgba(roleRgb(role), 0.55));
+              ctx.strokeStyle = gr;
+              ctx.globalAlpha = i.a;
+              curve(ctx, sp, q);
+            }
+            ctx.globalAlpha = 1;
+
+            if (v.hov && v.hov !== sel) {
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = rgba(WHITE, 0.6);
+              for (const [m] of neighbours(v.hov)) curve(ctx, pos.get(v.hov), pos.get(m));
+            }
+
+            for (const [n, p] of pos) {
+              const i = info(n);
+              if (!i || i.role === 'sel') continue;
+              const al = i.a * decay(i.h, 0.12, 0.3);
+              glowDot(ctx, p.x, p.y, (4.4 - Math.min(i.h - 1, 4) * 0.3) * (0.6 + 0.4 * i.a), roleRgb(i.role), al, 8 * al);
+            }
+            glowDot(ctx, sp.x, sp.y, 6.5, WHITE, 1, 18);
+            selLabel(ctx, sp, W);
+            if (v.hov) {
+              const p = pos.get(v.hov);
+              ctx.strokeStyle = TEXT;
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, 8, 0, 7);
+              ctx.stroke();
+            }
+          };
+          return { layout, draw, hit: (x, y) => nearest(pos, x, y, 10), anchor: (n) => ({ x: pos.get(n).x, y: pos.get(n).y - 12 }) };
+        }
+
+        // ================================================================ 4 Ridgeline
+
+        function ridge(v) {
+          let L;
+          const AMP = 46;
+          const layout = () => { L = latticeLayout(v.W, v.H); };
+          const spacing = () => (v.H - 64) / 11;
+
+          /** A row's height at x: each class a bump, merged so that crowded bumps saturate rather than pile up. */
+          function height(k, x, lit) {
+            const names = rows.get(k);
+            const sp = L.pos.get(names[0]).sp;
+            const x0 = L.pos.get(names[0]).x;
+            const s = Math.max(5, sp * 0.4);
+            const c = Math.round((x - x0) / sp);
+            const w = Math.ceil((3 * s) / sp) + 1;
+            let rest = 1;
+            for (let i = Math.max(0, c - w); i <= Math.min(names.length - 1, c + w); i++) {
+              const n = names[i];
+              const f = info(n);
+              let a = lit ? 0 : 0.08;
+              if (f) a = f.role === 'sel' ? 1.15 : (0.5 + 0.5 * decay(f.h, 0.1, 0.25)) * (0.15 + 0.85 * f.a);
+              if (lit && !f) continue;
+              const d = (x - L.pos.get(n).x) / s;
+              rest *= 1 - Math.min(0.98, a * Math.exp(-0.5 * d * d));
+            }
+            return 1 - rest;
+          }
+
+          function roleOfRow(k) {
+            const ks = kOf(sel);
+            return k > ks ? Y : k < ks ? B : WHITE;
+          }
+
+          const draw = () => {
+            const { ctx, W, H } = v;
+            const { pos, yOf } = L;
+            rowNumbers(ctx, yOf);
+            const ks = kOf(sel);
+            for (let k = 12; k >= 1; k--) {
+              const y = yOf(k);
+              const names = rows.get(k);
+              const sp = pos.get(names[0]).sp;
+              const xa = pos.get(names[0]).x - Math.max(30, sp);
+              const xb = pos.get(names[names.length - 1]).x + Math.max(30, sp);
+              const pts = [];
+              for (let x = xa; x <= xb; x += 2) pts.push({ x, all: height(k, x, false), lit: height(k, x, true) });
+
+              // the ridge hides what is behind it
+              ctx.beginPath();
+              ctx.moveTo(xa, y);
+              for (const p of pts) ctx.lineTo(p.x, y - AMP * p.all);
+              ctx.lineTo(xb, y);
+              ctx.closePath();
+              ctx.fillStyle = BAND;
+              ctx.fill();
+              ctx.strokeStyle = 'rgba(170,179,197,0.3)';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+              // the lit part, filled with a gradient that climbs from the baseline
+              if (k !== ks || true) {
+                const c = roleOfRow(k);
+                const g = ctx.createLinearGradient(0, y, 0, y - AMP);
+                g.addColorStop(0, rgba(c, 0));
+                g.addColorStop(1, rgba(c, 0.5));
+                let run = [];
+                const flush = () => {
+                  if (run.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(run[0].x, y);
+                    for (const p of run) ctx.lineTo(p.x, y - AMP * p.lit);
+                    ctx.lineTo(run[run.length - 1].x, y);
+                    ctx.closePath();
+                    ctx.fillStyle = g;
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.moveTo(run[0].x, y - AMP * run[0].lit);
+                    for (const p of run) ctx.lineTo(p.x, y - AMP * p.lit);
+                    ctx.strokeStyle = rgba(c, k === ks ? 0.95 : 0.8);
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                  }
+                  run = [];
+                };
+                for (const p of pts) (p.lit > 0.012 ? run.push(p) : flush());
+                flush();
+              }
+
+              // a small dot on each peak, so a peak looks like something you can pick
+              for (const n of names) {
+                const i = info(n);
+                if (!i) continue;
+                const p = pos.get(n);
+                const top = y - AMP * height(k, p.x, true);
+                if (i.role === 'sel') {
+                  glowDot(ctx, p.x, top, 5, WHITE, 1, 14);
+                } else glowDot(ctx, p.x, top, 2.4, roleRgb(i.role), i.a * decay(i.h, 0.1, 0.4), 5);
+              }
+            }
+
+            const p = pos.get(sel);
+            selLabel(ctx, { x: p.x, y: yOf(ks) - AMP * 1.1 }, W, 22);
+            if (v.hov) {
+              const q = pos.get(v.hov);
+              const top = yOf(kOf(v.hov)) - AMP * height(kOf(v.hov), q.x, true);
+              ctx.strokeStyle = TEXT;
+              ctx.lineWidth = 1.6;
+              ctx.beginPath();
+              ctx.arc(q.x, top, 7, 0, 7);
+              ctx.stroke();
+            }
+          };
+
+          const hit = (x, y) => {
+            const k = Math.round(12 - (y + 14 - 32) / spacing());
+            if (k < 1 || k > 12) return null;
+            let best = null;
+            let bd = Infinity;
+            for (const n of rows.get(k)) {
+              const d = Math.abs(L.pos.get(n).x - x);
+              if (d < bd) { bd = d; best = n; }
+            }
+            return bd < Math.max(10, L.pos.get(rows.get(k)[0]).sp * 0.6) ? best : null;
+          };
+          const anchor = (n) => {
+            const p = L.pos.get(n);
+            return { x: p.x, y: L.yOf(kOf(n)) - AMP * height(kOf(n), p.x, true) - 10 };
+          };
+          return { layout, draw, hit, anchor };
+        }
+
+        // ================================================================ 5 Spectrum
+
+        function spectrum(v) {
+          const LEFT = 70;
+          const RIGHT = 130;
+          const pos = new Map();
+          const yOf = (k) => 40 + (12 - k) * ((v.H - 80) / 11);
+          const layout = () => {
+            const area = v.W - LEFT - RIGHT;
+            for (const [k, names] of rows) {
+              const pitch = area / names.length;
+              names.forEach((n, i) => pos.set(n, { x: LEFT + (i + 0.5) * pitch, y: yOf(k), pitch }));
+            }
+          };
+          const tickW = (p) => Math.max(3, Math.min(8, p.pitch * 0.5));
+          const roundRect = (ctx, x, y, w, h, r) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+          };
+          const bar = (ctx, p, h, c, a) => {
+            const w = tickW(p);
+            const g = ctx.createLinearGradient(0, p.y - h / 2, 0, p.y + h / 2);
+            g.addColorStop(0, rgba(c, a));
+            g.addColorStop(1, rgba(c, a * 0.3));
+            ctx.fillStyle = g;
+            roundRect(ctx, p.x - w / 2, p.y - h / 2, w, h, Math.min(w / 2, 3));
+            ctx.fill();
+          };
+
+          const draw = () => {
+            const { ctx, W } = v;
+            const ks = kOf(sel);
+            rowNumbers(ctx, yOf);
+            const nbrs = v.hov ? new Set([...LAT.parents.get(v.hov), ...LAT.children.get(v.hov)]) : new Set();
+
+            for (const [k, names] of rows) {
+              const y = yOf(k);
+              ctx.strokeStyle = 'rgba(170,179,197,0.07)';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(LEFT - 14, y);
+              ctx.lineTo(W - RIGHT + 14, y);
+              ctx.stroke();
+
+              let lit = 0;
+              for (const n of names) {
+                const p = pos.get(n);
+                const i = info(n);
+                if (!i) { bar(ctx, p, 7, [170, 179, 197], 0.3); continue; }
+                lit++;
+                if (i.role === 'sel') continue;
+                const e = 0.2 + 0.8 * i.a;
+                bar(ctx, p, (10 + 22 * decay(i.h, 0.1, 0.3)) * e, roleRgb(i.role), i.a * decay(i.h, 0.07, 0.5));
+              }
+
+              // how many of this row are lit
+              const c = k > ks ? Y : k < ks ? B : WHITE;
+              const x = W - RIGHT + 34;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              if (k !== ks) {
+                ctx.font = `600 14px ${FONT}`;
+                ctx.fillStyle = lit ? rgba(c, 1) : MUTED;
+                ctx.fillText(String(lit), x, y - 5);
+                const w = ctx.measureText(String(lit)).width;
+                ctx.font = `400 13px ${FONT}`;
+                ctx.fillStyle = MUTED;
+                ctx.fillText(' of ' + names.length, x + w, y - 5);
+                ctx.fillStyle = 'rgba(170,179,197,0.14)';
+                ctx.fillRect(x, y + 9, 64, 3);
+                ctx.fillStyle = rgba(c, 0.9);
+                ctx.fillRect(x, y + 9, 64 * (lit / names.length), 3);
+              }
+            }
+
+            if (v.hov) {
+              ctx.strokeStyle = rgba(WHITE, 0.85);
+              ctx.lineWidth = 1.4;
+              for (const n of nbrs) {
+                const p = pos.get(n);
+                const w = tickW(p) + 6;
+                roundRect(ctx, p.x - w / 2, p.y - 20, w, 40, 4);
+                ctx.stroke();
+              }
+            }
+
+            const p = pos.get(sel);
+            bar(ctx, p, 44, WHITE, 1);
+            ctx.save();
+            ctx.shadowColor = rgba(WHITE, 0.6);
+            ctx.shadowBlur = 14;
+            ctx.fillStyle = rgba(WHITE, 0.4);
+            roundRect(ctx, p.x - tickW(p) / 2, p.y - 22, tickW(p), 44, 3);
+            ctx.fill();
+            ctx.restore();
+            selLabel(ctx, { x: p.x, y: p.y - 6 }, W, 36);
+
+            if (v.hov) {
+              const q = pos.get(v.hov);
+              const w = tickW(q) + 8;
+              ctx.strokeStyle = TEXT;
+              ctx.lineWidth = 1.6;
+              roundRect(ctx, q.x - w / 2, q.y - 24, w, 48, 5);
+              ctx.stroke();
+            }
+          };
+
+          const hit = (x, y) => {
+            let best = null;
+            let bd = Infinity;
+            for (const [n, p] of pos) {
+              if (Math.abs(p.y - y) > 24) continue;
+              const d = Math.abs(p.x - x);
+              if (d < bd) { bd = d; best = n; }
+            }
+            return best && bd <= Math.max(5, pos.get(best).pitch / 2) ? best : null;
+          };
+          return { layout, draw, hit, anchor: (n) => ({ x: pos.get(n).x, y: pos.get(n).y - 26 }) };
+        }
+
+        // ---------------------------------------------------------------- mounting the five canvases
+
+        const makers = { v1: [fade, 560], v2: [cone, 560], v3: [orbit, 600], v4: [ridge, 600], v5: [spectrum, 560] };
+        const views = [];
+        let raf = 0;
+
+        function mount(id, [make, H]) {
+          const root = $(id);
+          const scroller = root.querySelector('.scroller');
+          const cv = root.querySelector('canvas');
+          const tip = root.querySelector('.tip');
+          const v = { cv, ctx: cv.getContext('2d'), W: 0, H, dpr: 1, hov: null, visible: false };
+          const impl = make(v);
+          v.impl = impl;
+
+          const layout = () => {
+            v.W = Math.max(scroller.clientWidth, 980);
+            v.dpr = window.devicePixelRatio || 1;
+            cv.width = v.W * v.dpr;
+            cv.height = H * v.dpr;
+            cv.style.width = v.W + 'px';
+            cv.style.height = H + 'px';
+            impl.layout();
+            render(v);
+          };
+          v.layout = layout;
+
+          const local = (e) => {
+            const r = cv.getBoundingClientRect();
+            return [e.clientX - r.left, e.clientY - r.top];
+          };
+          cv.addEventListener('mousemove', (e) => {
+            const n = impl.hit(...local(e));
+            if (n === v.hov) return;
+            v.hov = n;
+            cv.style.cursor = n ? 'pointer' : 'default';
+            if (n) {
+              const a = impl.anchor(n);
+              tip.hidden = false;
+              tip.innerHTML = `${n}<span>${LAT.prime(LAT.byName.get(n).prime)}</span>`;
+              tip.style.left = a.x + 'px';
+              tip.style.top = a.y + 'px';
+            } else tip.hidden = true;
+            schedule();
+          });
+          cv.addEventListener('mouseleave', () => {
+            v.hov = null;
+            tip.hidden = true;
+            schedule();
+          });
+          cv.addEventListener('click', (e) => {
+            const n = impl.hit(...local(e));
+            if (n) choose(n);
+          });
+
+          new ResizeObserver(layout).observe(scroller);
+          new IntersectionObserver(([en]) => {
+            v.visible = en.isIntersecting;
+            if (v.visible) schedule();
+          }, { rootMargin: '200px' }).observe(root);
+          scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
+          views.push(v);
+        }
+
+        function render(v) {
+          if (!sel || !v.W) return;
+          v.ctx.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
+          v.ctx.clearRect(0, 0, v.W, v.H);
+          v.ctx.globalAlpha = 1;
+          v.impl.draw();
+        }
+        function frame() {
+          raf = 0;
+          for (const v of views) if (v.visible) render(v);
+          if (sel && performance.now() - t0 < SPAN) schedule();
+        }
+        function schedule() {
+          if (!raf) raf = requestAnimationFrame(frame);
+        }
+
+        // ---------------------------------------------------------------- choosing
+
+        const read = $('read');
+        function choose(name) {
+          if (!LAT.byName.has(name) || name === sel) return;
+          sel = name;
+          down = LAT.below(name);
+          up = LAT.above(name);
+          t0 = REDUCED ? -SPAN : performance.now();
+          read.innerHTML = `${name} <span style="color:var(--muted)">${LAT.prime(LAT.byName.get(name).prime)}</span><span class="sup">${up.size} supersets</span><span class="sub" style="margin-left:16px">${down.size} subsets</span>`;
+          history.replaceState(null, '', '#' + encodeURIComponent(name));
+          for (const b of chips.children) b.setAttribute('aria-pressed', String(b.textContent === name));
+          for (const v of views) v.hov = null;
+          document.querySelectorAll('.tip').forEach((t) => (t.hidden = true));
+          schedule();
+        }
+
+        const chips = $('chips');
+        for (const n of ['4-Z15', '3-11', '5-35', '6-Z49', '7-35', '2-1', '9-12']) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = n;
+          b.setAttribute('aria-pressed', 'false');
+          b.addEventListener('click', () => choose(n));
+          chips.append(b);
+        }
+        $('q').addEventListener('input', (e) => {
+          const c = LAT.find(e.target.value);
+          if (c) choose(c.name);
+        });
+
+        sel = '4-Z15';
+        down = LAT.below(sel);
+        up = LAT.above(sel);
+        t0 = REDUCED ? -SPAN : performance.now();
+        for (const [id, spec] of Object.entries(makers)) mount(id, spec);
+        let start = null;
+        try { start = LAT.find(decodeURIComponent(location.hash.slice(1))); } catch {}
+        const first = start ? start.name : '4-Z15';
+        sel = null;
+        choose(first);
+        document.fonts.ready.then(schedule);
+      })();
+    </script>
+  </body>
+</html>

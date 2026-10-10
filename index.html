@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Obscure Music Theory</title>
+    <meta name="description" content="Pitch-class set theory tools: a set calculator, Tn and In transformations, and a browser for all 224 set classes." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..700&display=swap" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/home.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="bar">
+        <a class="logo" href="index.html" aria-current="page">Obscure Music Theory</a>
+        <nav aria-label="Pages">
+          <a href="calculator.html">Calculator</a>
+          <a href="transformations.html">Transformations</a>
+          <a href="set-classes.html">Set classes</a>
+          <a href="subsets-and-supersets.html">Subsets and supersets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-text rise">
+          <h1 class="title" aria-label="Any set of notes, decoded.">
+            <span class="ln" aria-hidden="true">Any set of notes,</span>
+            <span class="ln decode" id="decode" aria-hidden="true">decoded.</span>
+          </h1>
+          <p class="lede">The essential toolkit for contemporary composers and music theorists. Start with any collection of notes and discover it in the pitch-class system.</p>
+          <form class="open" id="open">
+            <div class="field" id="hero-field">
+              <input id="hero-input" type="text" aria-label="Set" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="0146" />
+              <span class="ghost" id="ghost" aria-hidden="true"><span id="ghost-text"></span><i class="caret"></i></span>
+            </div>
+            <button type="submit" class="btn primary">Try it out<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></button>
+          </form>
+        </div>
+
+        <div class="hero-clock rise" style="animation-delay: 0.2s">
+          <div id="hero-clock" class="clock"></div>
+          <p class="read" aria-live="polite"><span id="h-forte"></span><span id="h-prime" class="accent"></span></p>
+        </div>
+      </section>
+
+      <section class="band section tools" aria-label="Pages">
+        <ul class="wrap">
+          <li data-reveal>
+            <a href="calculator.html" data-carry="calculator.html">
+              <div class="t-text">
+                <h2>Calculator</h2>
+                <p>Normal form, prime form, interval vector, complement relations,&nbsp;etc.</p>
+              </div>
+              <div class="vis vis-clock" data-vis="calc" aria-hidden="true"></div>
+              <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </li>
+          <li data-reveal>
+            <a href="transformations.html" data-carry="transformations.html">
+              <div class="t-text">
+                <h2>Transformations</h2>
+                <p>T<sub>n</sub> and I<sub>n</sub> of a set, and the symmetries.</p>
+              </div>
+              <div class="vis vis-clock" data-vis="tn" aria-hidden="true"></div>
+              <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </li>
+          <li data-reveal>
+            <a href="set-classes.html">
+              <div class="t-text">
+                <h2>Set classes</h2>
+                <p>Search and filter the table of all 224 classes.</p>
+              </div>
+              <div class="vis vis-bars" data-vis="classes" aria-hidden="true"></div>
+              <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </li>
+          <li data-reveal>
+            <a href="subsets-and-supersets.html" data-carry="subsets-and-supersets.html">
+              <div class="t-text">
+                <h2>Subsets and supersets</h2>
+                <p>Every set class on one map, and what lies directly above and below each one.</p>
+              </div>
+              <div class="vis vis-lattice" data-vis="lattice" aria-hidden="true"></div>
+              <svg class="go" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script src="js/forte-table.js"></script>
+    <script src="js/theory.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/home.js"></script>
+  </body>
+</html>
