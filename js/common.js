@@ -662,10 +662,12 @@ const UI = (() => {
   const KEY_HOME = 60;
   const WHITE_KEYS = 28;
   const BLACK = new Set([1, 3, 6, 8, 10]);
+  const narrow = window.matchMedia('(max-width: 600px)');
+  const tablet = window.matchMedia('(max-width: 900px)');
 
   /**
    * A piano keyboard that fills `host` (a scrolling box): as wide as it can be, but each white key
-   * between 20 and 56px. `height(w)` gives the key height for a white key `w` wide. The keyboard
+   * between 20 and 56px (38 to 56 on a phone, 30 to 56 on a tablet, where the keyboard scrolls). `height(w)` gives the key height for a white key `w` wide. The keyboard
    * only reports presses to `onPress(midi)`; what a press means is up to the page. The page keeps
    * the keys that are down in `kb.on` and calls `kb.paint()`; `kb.mark(cls, midis)` gives the class
    * `cls` to some other keys. A host that is hidden gets its keys when it is shown.
@@ -733,8 +735,13 @@ const UI = (() => {
         }
       });
 
+      const scrolled = host.scrollLeft;
+      const first = !svg;
       if (svg) svg.replaceWith(next);
       else host.appendChild(next);
+      // First time on a keyboard that scrolls: show the octave of middle C, where a set starts.
+      if (first) host.scrollLeft = Math.max(0, 10.5 * ww - host.clientWidth / 2);
+      else host.scrollLeft = scrolled;
       svg = next;
       width = ww;
       tall = WH;
@@ -746,7 +753,9 @@ const UI = (() => {
     function fit() {
       const avail = host.clientWidth;
       if (!avail) return;
-      const ww = Math.min(56, Math.max(20, Math.floor((avail / WHITE_KEYS) * 10) / 10));
+      // On a phone or tablet the keys stay wide enough for a finger, and the keyboard scrolls.
+      const least = narrow.matches ? 38 : tablet.matches ? 30 : 20;
+      const ww = Math.min(56, Math.max(least, Math.floor((avail / WHITE_KEYS) * 10) / 10));
       if (!svg || Math.abs(ww - width) > 0.3 || height(ww) !== tall) build(ww);
     }
 

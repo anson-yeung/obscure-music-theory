@@ -230,8 +230,9 @@
       const cells = [...$('ic-box').querySelectorAll(`.ic-cell[data-ic="${ic}"]`)];
       rows.push({ ic, cells, count: cells[1] });
       for (const el of cells) {
-        el.addEventListener('mouseenter', () => activateIc(ic));
-        el.addEventListener('mouseleave', () => activateIc(0));
+        // Only a mouse hovers; on a touch screen the pointer "enters" at a tap and would never leave.
+        el.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && activateIc(ic));
+        el.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && activateIc(0));
         el.addEventListener('click', () => playInterval(ic));
       }
       cells[0].addEventListener('focus', () => activateIc(ic));

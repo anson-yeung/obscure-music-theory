@@ -77,6 +77,17 @@
 .ic-count { font-size: 1.375rem; font-weight: var(--w-head); }
 .ic-box > .active { background: rgba(255, 255, 255, 0.07); }
 .ic-box > .ic-cell { cursor: pointer; }
+.ic-box > .ic-cell:active { background: rgba(255, 255, 255, 0.07); }
+
+/* On a phone the box takes the width it is given instead of the width its cells would like. */
+@media (max-width: 900px) {
+  .ic { min-width: 0; padding: 20px 0 22px; border: 0; justify-items: stretch; }
+  .ic-box { grid-template-columns: auto repeat(6, minmax(0, 1fr)); width: 100%; }
+  .ic-box > span { padding: 8px 2px; }
+  .ic-lab { padding-left: 4px !important; padding-right: 10px !important; font-size: 0.9375rem; }
+  .ic-count { font-size: 1.25rem; }
+  .ic-clock { justify-self: center; }
+}
 
 .ic-clock { width: min(100%, 230px); margin-top: 8px; }
 .ic-clock svg { display: block; width: 100%; height: auto; overflow: visible; }

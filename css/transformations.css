@@ -121,3 +121,27 @@
   cursor: pointer;
 }
 [data-reveal].in .ttable tbody tr { animation: cell 0.7s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms + 150ms); }
+
+/* ---------- phone and tablet ---------- */
+
+@media (max-width: 900px) {
+  /* The clock beside the symmetry text is left out; the text says it all. */
+  .sym-clock { display: none; }
+
+  .stable th, .stable td { padding: 9px 10px; }
+  .stable tbody th { white-space: normal; }
+  .stable td { font-size: 1.0625rem; }
+  .stable .deg { font-size: 1.125rem; }
+
+  .appendix summary { flex-wrap: wrap; padding: 16px 18px; }
+  .a-val { font-size: 1.0625rem; }
+  .appendix { overflow-x: auto; }
+  .appendix .ttable { width: calc(100% - 12px); margin: 0 6px 8px; }
+  .ttable th, .ttable td { padding: 9px 8px; }
+  .appendix .ttable th, .appendix .ttable td { padding-left: 8px; }
+  .ttable tbody th { width: 2.5rem; }
+  /* A set stays on one line, braces and all; it gets a size that fits two of them side by side. */
+  .ttable td, .ttable .pick { font-size: clamp(0.75rem, 3.5vw, 1rem); overflow-wrap: normal; }
+  .ttable td .v { white-space: nowrap; }
+  .ttable td .note { display: block; margin: 2px 0 0; font-size: 0.8125rem; }
+}

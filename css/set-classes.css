@@ -110,19 +110,20 @@
   opacity: 0;
   transition: opacity 0.25s, transform 0.4s var(--ease);
 }
-.sc-table thead button:hover::after { opacity: 0.5; }
+@media (hover: hover) { .sc-table thead button:hover::after { opacity: 0.5; } }
 .sc-table th[aria-sort] button::after { opacity: 1; }
 .sc-table th[aria-sort='descending'] button::after { transform: translateY(2px) rotate(-135deg); }
 
 .c-forms button { flex-direction: row-reverse; }
 .c-forms, td.forms { text-align: right !important; }
 .sc-table tbody tr { cursor: pointer; }
-.sc-table tbody tr:hover td { background: rgba(255, 255, 255, 0.04); }
+@media (hover: hover) { .sc-table tbody tr:hover td { background: rgba(255, 255, 255, 0.04); } }
 .sc-table tbody tr.sel td { background: rgba(88, 196, 221, 0.12); }
 .sc-table tbody tr.found td { animation: found 1.8s var(--ease); }
 @keyframes found { from { background: rgba(244, 211, 94, 0.28); } }
 
 td.name { font-weight: var(--w-head); }
+td.forms .u { display: none; }
 .pick {
   padding: 0;
   background: none;
@@ -131,7 +132,8 @@ td.name { font-weight: var(--w-head); }
   cursor: pointer;
   transition: color 0.25s;
 }
-.pick:hover, .pick[aria-pressed='true'] { color: var(--blue); }
+.pick[aria-pressed='true'] { color: var(--blue); }
+@media (hover: hover) { .pick:hover { color: var(--blue); } }
 td.prime { letter-spacing: 0.04em; }
 
 .none { padding: 32px 0; font-size: 1.125rem; }
@@ -161,39 +163,150 @@ td.prime { letter-spacing: 0.04em; }
 .panel.is-empty .play { opacity: 0.35; pointer-events: none; }
 .panel .clock .node { pointer-events: none; }
 
-/* On a narrow screen the clock docks to the bottom edge, small, beside the name and the buttons. */
+/* ---------- dock toggle: only where the panel is a bar along the bottom ---------- */
+
+.dock-toggle { display: none; }
+
+/* ---------- tablet and phone ---------- */
+
+/* The panel is a sheet along the bottom edge. Shut it is a slim bar with the name; open it has room
+   for a clock a finger can read and buttons a thumb can hit. */
 @media (max-width: 900px) {
   .panel {
+    position: sticky;
     bottom: 0;
     top: auto;
     z-index: 2;
-    grid-template-columns: 112px minmax(0, 1fr);
-    grid-template-areas: 'clock info' 'clock play';
-    gap: 6px 16px;
-    justify-items: start;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'clock' 'info' 'play';
+    gap: 14px;
+    justify-items: center;
     margin: 0 calc(var(--gutter) * -1);
-    padding: 10px var(--gutter);
-    text-align: left;
+    padding: 22px var(--gutter) calc(18px + env(safe-area-inset-bottom));
+    text-align: center;
     background: var(--band);
-    border-top: 1px solid var(--line-strong);
+    box-shadow: 0 -14px 32px rgba(0, 0, 0, 0.45);
   }
-  .panel .clock { grid-area: clock; width: 112px; }
-  .pinfo { grid-area: info; justify-items: start; }
-  .plinks { justify-content: flex-start; }
-  .where { justify-content: flex-start; gap: 10px; margin-top: 4px; }
-  .where .key { font-size: 0.9375rem; }
-  .where .seg { justify-content: flex-start; max-height: 4.5rem; }
-  .panel .play { grid-area: play; justify-content: flex-start; gap: 8px; margin: 0; }
-  .panel .btn { padding: 6px 11px; font-size: 0.875rem; }
-  .sel-name { font-size: 1.25rem; }
-  .sel-prime { font-size: 1.4rem; }
+  .panel .clock { grid-area: clock; width: min(100%, 210px); }
+  .pinfo { grid-area: info; justify-items: center; width: 100%; }
+  .panel .play { grid-area: play; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 420px; margin: 0; }
+  .panel .play .btn { justify-content: center; padding: 13px 12px; font-size: 1rem; }
+  .sel-name { font-size: 1.5rem; }
+  .sel-prime { font-size: 1.9rem; }
+  .plinks { margin-top: 10px; gap: 8px 22px; }
+  .pinfo .link { padding: 6px 0; }
+  .where { flex-direction: column; gap: 8px; margin-top: 10px; }
+  .where .seg { max-height: 6.5rem; }
+  .where .seg button { padding: 9px 12px; }
+
+  .dock-toggle {
+    position: absolute;
+    top: 6px;
+    right: calc(var(--gutter) - 12px);
+    display: block;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .dock-toggle .chev {
+    display: block;
+    width: 11px;
+    height: 11px;
+    margin: 0 auto;
+    border-right: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
+    transform: translateY(-3px) rotate(45deg);
+    transition: transform 0.4s var(--ease);
+  }
+  .panel.collapsed .dock-toggle .chev { transform: translateY(3px) rotate(-135deg); }
+
+  .panel.collapsed {
+    grid-template-columns: 56px minmax(0, 1fr) 44px;
+    grid-template-areas: 'clock info toggle';
+    align-items: center;
+    justify-items: start;
+    gap: 14px;
+    padding-top: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    text-align: left;
+    cursor: pointer;
+  }
+  .panel.collapsed .clock { width: 56px; }
+  .panel.collapsed .pinfo { justify-items: start; }
+  .panel.collapsed .pinfo { grid-template-columns: auto auto; justify-content: start; align-items: baseline; gap: 0 12px; }
+  .panel.collapsed .sel-name { font-size: 1.25rem; }
+  .panel.collapsed .sel-prime { min-height: 0; font-size: 1.25rem; }
+  .panel.collapsed .plinks, .panel.collapsed .where, .panel.collapsed .play { display: none; }
+  .panel.collapsed .dock-toggle { position: static; grid-area: toggle; margin: 0; }
 }
 
+/* A tablet has the width for the clock beside the words. */
+@media (min-width: 601px) and (max-width: 900px) {
+  .panel:not(.collapsed) {
+    grid-template-columns: 230px minmax(0, 1fr);
+    grid-template-areas: 'clock info' 'clock play';
+    align-items: center;
+    justify-items: start;
+    gap: 14px 32px;
+    text-align: left;
+  }
+  .panel:not(.collapsed) .pinfo { justify-items: start; }
+  .panel:not(.collapsed) .plinks { justify-content: flex-start; }
+  .panel:not(.collapsed) .where { align-items: flex-start; }
+  .panel:not(.collapsed) .where .seg { justify-content: flex-start; }
+  .panel:not(.collapsed) .play { align-self: start; justify-self: start; }
+}
+
+/* On a phone the table is a list of rows: name, prime form and forms on top, the vector and the Z-mate below. */
 @media (max-width: 760px) {
-  .tbl-wrap { overflow-x: auto; }
-  .sc-table { width: 100%; min-width: 480px; margin: 0; }
-  .sc-table th:first-child, .sc-table td:first-child { padding-left: 12px; }
-  .sc-table th:last-child, .sc-table td:last-child { padding-right: 12px; }
-  .sc-table thead th { position: static; }
+  .tbl-wrap { overflow: visible; }
+  .sc-table, .sc-table tbody { display: block; width: 100%; min-width: 0; }
+
+  /* The column heads become the ways to sort. */
+  .sc-table thead, .sc-table thead tr { display: block; }
+  .sc-table thead tr { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 14px; padding: 0 12px; border-bottom: 1px solid var(--line-strong); }
+  .sc-table thead th, .sc-table thead th:first-child, .sc-table thead th:last-child { display: block; position: static; padding: 0; background: none; }
+  .sc-table thead th::after { display: none; }
+  .sc-table thead th.c-z { display: none; }
+  /* The arrow of the sorted column hangs beside its name, so the four names fit on one line. */
+  .sc-table thead button { position: relative; padding: 12px 0; font-size: 0.8125rem; }
+  .sc-table thead button::after { position: absolute; top: calc(50% - 4px); right: -13px; width: 6px; height: 6px; }
+  .sc-table thead .c-forms button::after { right: auto; left: -13px; }
+
+  .sc-table tbody tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'name prime forms' 'icv icv mate';
+    align-items: baseline;
+    gap: 4px 16px;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.4s;
+  }
+  .sc-table tbody tr.sel { background: rgba(88, 196, 221, 0.12); }
+  .sc-table tbody tr.found { animation: found 1.8s var(--ease); }
+  .sc-table tbody td, .sc-table tbody td:first-child, .sc-table tbody td:last-child { display: block; padding: 0; background: none !important; animation: none !important; }
+  .sc-table tbody td::after { display: none; }
+  .sc-table td.name { grid-area: name; font-size: 1.125rem; }
+  .sc-table td.prime { grid-area: prime; font-size: 1.125rem; }
+  .sc-table td.icv { grid-area: icv; color: var(--muted); }
+  .sc-table td.mate { grid-area: mate; justify-self: end; }
+  .sc-table td.mate:not(:empty)::before { content: 'Z-mate '; position: static; display: inline; height: auto; background: none; color: var(--muted); }
+  .sc-table td.forms { grid-area: forms; text-align: right !important; color: var(--muted); }
+  .sc-table td.forms .u { display: inline; }
+  .sc-table .pick { padding: 4px 0; }
+  .sc-table .link { padding: 4px 0; }
+}
+
+/* The scrollbars of the filter rows would sit on the rows themselves; a touch screen scrolls without them. */
+@media (max-width: 900px) {
+  .tw { scrollbar-width: none; }
+  .tw::-webkit-scrollbar { display: none; }
+  .filters .track { --num: 2.1rem; --wide: 3.8rem; }
+  .filters .track button { height: 44px; }
+  .keys-scroll { scrollbar-width: none; }
+  .keys-scroll::-webkit-scrollbar { display: none; }
 }

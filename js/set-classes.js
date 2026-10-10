@@ -30,9 +30,9 @@
     tr.innerHTML =
       `<td class="name"><button type="button" class="pick" aria-pressed="false">${it.sc.name}</button></td>` +
       `<td class="prime">${it.card ? it.prime : '–'}</td>` +
-      `<td>${icvText(it.icv)}</td>` +
-      `<td>${it.mate ? `<button type="button" class="link" data-mate="${it.mate}">${it.mate}</button>` : ''}</td>` +
-      `<td class="forms">${it.forms}</td>`;
+      `<td class="icv">${icvText(it.icv)}</td>` +
+      `<td class="mate">${it.mate ? `<button type="button" class="link" data-mate="${it.mate}">${it.mate}</button>` : ''}</td>` +
+      `<td class="forms">${it.forms}<span class="u">${it.forms === 1 ? ' form' : ' forms'}</span></td>`;
     it.tr = tr;
     it.fit = 0; // how many of its forms sit inside the chosen notes
     it.pick = tr.querySelector('.pick');
@@ -45,6 +45,22 @@
   const morph = UI.createMorph(clock.addShape('shape'));
   const panel = document.querySelector('.panel');
   let chosen = null;
+
+  // Where the panel is a sheet along the bottom it starts shut, as a bar with the name, and opens
+  // for the clock and the buttons. Anywhere else it is always open.
+  const sheet = window.matchMedia('(max-width: 900px)');
+  const dock = $('dock-toggle');
+  function openDock(open) {
+    panel.classList.toggle('collapsed', !open);
+    dock.setAttribute('aria-expanded', String(open));
+    dock.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
+  }
+  openDock(!sheet.matches);
+  sheet.addEventListener('change', () => openDock(!sheet.matches));
+  dock.addEventListener('click', () => openDock(panel.classList.contains('collapsed')));
+  panel.addEventListener('click', (e) => {
+    if (panel.classList.contains('collapsed') && !e.target.closest('.dock-toggle')) openDock(true);
+  });
 
   function choose(it) {
     if (chosen) {
@@ -366,6 +382,8 @@
     const mate = e.target.closest('button[data-mate]');
     const row = e.target.closest('tr');
     if (!row) return;
+    // Picking a class is a wish to see it: on a phone that opens the sheet.
+    if (sheet.matches) openDock(true);
     if (!mate) return choose(items[row.dataset.i]);
     jumpTo(items.find((i) => i.sc.name === mate.dataset.mate));
   });

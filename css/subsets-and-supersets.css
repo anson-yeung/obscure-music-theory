@@ -66,3 +66,6 @@
 .center .mc-dot.ping { animation: pulse 0.6s var(--ease); }
 .play { display: flex; gap: 8px; }
 .play .btn { font-size: 16px; }
+@media (max-width: 900px) {
+  .tip { border-radius: 0; }
+}
